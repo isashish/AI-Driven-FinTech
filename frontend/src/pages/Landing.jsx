@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import ThemeToggle from "../components/ThemeToggle";
 import '../styles/auth.css';
+import { Sparkles } from 'lucide-react';
 
 const FEATURES = [
   { emoji: '📊', title: 'Smart Dashboard', desc: 'Real-time financial health score with actionable insights.' },
@@ -38,10 +39,14 @@ export default function Landing({ onLogin, onSignup }) {
               className="landing-logo-icon"
               style={{
                 background: `linear-gradient(135deg,${T.teal},${T.blue})`,
-                boxShadow: `0 4px 14px ${T.teal}44`
+                boxShadow: `0 4px 14px ${T.teal}44`,
+                color: '#fff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}
             >
-              💎
+              <Sparkles size={20} />
             </div>
             <div>
               <div className="landing-logo-name" style={{ color: T.text }}>AI-FinTech</div>
@@ -160,7 +165,7 @@ export default function Landing({ onLogin, onSignup }) {
 
       {/* FOOTER */}
       <footer className="landing-footer" style={{ borderTop: `1px solid ${T.border}`, color: T.textMuted }}>
-        <span>💎 AI-Driven FinTech</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Sparkles size={16} /> AI-Driven FinTech</span>
         <span style={{ color: T.teal }}>Powered by Ashish and Team</span>
         
       </footer>

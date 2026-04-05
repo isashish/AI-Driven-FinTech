@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { authAPI } from '../api';
 import '../styles/auth.css';
+import { Sparkles } from 'lucide-react';
 
 export default function Login({ onLogin, onGoSignup, onGoLanding }) {
   const { T } = useTheme();
@@ -41,11 +42,11 @@ export default function Login({ onLogin, onGoSignup, onGoLanding }) {
         {/* Logo */}
         <div className="auth-logo-row">
           <div className="auth-logo-icon"
-            style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, boxShadow: `0 4px 14px ${T.teal}44` }}>
-            💎
+            style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, boxShadow: `0 4px 14px ${T.teal}44`, color: '#fff' }}>
+            <Sparkles size={20} />
           </div>
           <div>
-            <div className="auth-logo-name" style={{ color: T.text }}>FinAI</div>
+            <div className="auth-logo-name" style={{ color: T.text }}>AI-FinTech</div>
             <div className="auth-logo-sub" style={{ color: T.textMuted }}>Health Planner</div>
           </div>
         </div>

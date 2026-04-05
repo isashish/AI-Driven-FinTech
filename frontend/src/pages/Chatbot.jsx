@@ -4,6 +4,7 @@ import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Badge, ImgBanner } from '../components/UI.jsx';
 import { calcHealth, fmtK, IMGS } from '../utils.jsx';
 import { chatAPI } from '../api';
+import { Sparkles } from 'lucide-react';
 
 export default function Chatbot({ profile }) {
   const { T } = useTheme();
@@ -77,10 +78,10 @@ export default function Chatbot({ profile }) {
           <div className="cb-header" style={{ borderBottom: `1px solid ${T.border}`, background: T.bg }}>
             <div
               className="cb-header-avatar"
-              style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})` }}
-            >🤖</div>
+              style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            ><Sparkles size={18} /></div>
             <div className="cb-header-info">
-              <div className="cb-header-name" style={{ color: T.text }}>FinAI Advisor</div>
+              <div className="cb-header-name" style={{ color: T.text }}>AI-FinTech Advisor</div>
               <div className="cb-header-status" style={{ color: T.green }}>
                 <div className="cb-header-status-dot" style={{ background: T.green }} />
                 Online · Ready to help
@@ -98,8 +99,8 @@ export default function Chatbot({ profile }) {
                 {m.role === 'assistant' && (
                   <div
                     className="cb-msg-avatar"
-                    style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})` }}
-                  >🤖</div>
+                    style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  ><Sparkles size={14} /></div>
                 )}
                 <div
                   className={`cb-msg-bubble ${m.role === 'user' ? 'cb-msg-bubble-user' : 'cb-msg-bubble-bot'}`}
@@ -119,8 +120,8 @@ export default function Chatbot({ profile }) {
               <div className="cb-typing">
                 <div
                   className="cb-msg-avatar"
-                  style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})` }}
-                >🤖</div>
+                  style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                ><Sparkles size={14} /></div>
                 <div className="cb-typing-box" style={{ background: T.bg, borderColor: T.border }}>
                   {[0, 1, 2].map(i => (
                     <div

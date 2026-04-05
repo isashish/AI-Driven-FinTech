@@ -15,15 +15,16 @@ import Signup     from './pages/Signup';
 
 import { calcHealth } from './utils.jsx';
 import { profileAPI, goalsAPI } from './api';
+import { LayoutDashboard, User, Target, TrendingUp, CreditCard, FlaskConical, Bot, Moon, Sun, LogOut, Sparkles } from 'lucide-react';
 
 const NAV = [
-  { id: 'dashboard',  label: 'Dashboard',        emoji: '📊' },
-  { id: 'profile',    label: 'Financial Profile', emoji: '👤' },
-  { id: 'goals',      label: 'Goal Planner',      emoji: '🎯' },
-  { id: 'investment', label: 'Investments',       emoji: '📈' },
-  { id: 'debt',       label: 'Debt Optimizer',    emoji: '💳' },
-  { id: 'whatif',     label: 'What-If Simulator', emoji: '🔬' },
-  { id: 'chatbot',    label: 'AI Advisor',        emoji: '🤖' },
+  { id: 'dashboard',  label: 'Dashboard',        Icon: LayoutDashboard },
+  { id: 'profile',    label: 'Financial Profile', Icon: User },
+  { id: 'goals',      label: 'Goal Planner',      Icon: Target },
+  { id: 'investment', label: 'Investments',       Icon: TrendingUp },
+  { id: 'debt',       label: 'Debt Optimizer',    Icon: CreditCard },
+  { id: 'whatif',     label: 'What-If Simulator', Icon: FlaskConical },
+  { id: 'chatbot',    label: 'AI Advisor',        Icon: Bot },
 ];
 
 function ThemeToggle() {
@@ -32,13 +33,13 @@ function ThemeToggle() {
     <button
       onClick={toggleTheme}
       className="app-theme-btn"
-      style={{ background: isDark ? '#1E2738' : '#F0F4FF', borderColor: T.border }}
+      style={{ width: '100%', justifyContent: 'center', background: isDark ? '#1E2738' : '#F0F4FF', borderColor: T.border }}
     >
       <div className="app-theme-track" style={{ background: isDark ? T.teal : T.border }}>
         <div className="app-theme-knob" style={{ left: isDark ? 16 : 3 }} />
       </div>
-      <span className="app-theme-label" style={{ color: T.textSub }}>
-        {isDark ? '🌙 Dark' : '☀️ Light'}
+      <span className="app-theme-label" style={{ color: T.textSub, display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {isDark ? <><Moon size={14} /> Dark</> : <><Sun size={14} /> Light</>}
       </span>
     </button>
   );
@@ -150,6 +151,8 @@ function AppInner() {
       <MobileNavbar
         toggleSidebar={() => setSidebarOpen(o => !o)}
         T={T}
+        onLogout={handleLogout}
+        themeToggle={<ThemeToggle />}
       />
 
       <div className={`app-overlay ${sidebarOpen ? 'open' : ''}`} onClick={() => setSidebarOpen(false)} />
@@ -164,8 +167,8 @@ function AppInner() {
           <div className="app-logo-wrap">
             <div className="app-logo-inner">
               <div className="app-logo-icon"
-                style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, boxShadow: `0 4px 14px ${T.teal}44` }}>
-                💎
+                style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, boxShadow: `0 4px 14px ${T.teal}44`, color: '#fff' }}>
+                <Sparkles size={20} />
               </div>
               <div>
                 <div className="app-logo-name" style={{ color: T.text }}>AI-FinTech</div>
@@ -189,7 +192,7 @@ function AppInner() {
           </div>
 
           <nav className="app-nav">
-            {NAV.map(({ id, label, emoji }) => {
+            {NAV.map(({ id, label, Icon }) => {
               const active = page === id;
               return (
                 <button
@@ -202,7 +205,7 @@ function AppInner() {
                     color: active ? T.teal : T.textMuted,
                   }}
                 >
-                  <span className="app-nav-emoji">{emoji}</span>
+                  <span className="app-nav-emoji"><Icon size={18} /></span>
                   {label}
                   {active && <div className="app-nav-dot" style={{ background: T.teal }} />}
                 </button>
@@ -211,8 +214,8 @@ function AppInner() {
           </nav>
 
           <div className="app-footer" style={{ borderTop: `1px solid ${T.border}` }}>
-            <button onClick={handleLogout} className="app-theme-btn" style={{ width: '100%', marginBottom: 10, background: T.rose + '22', color: T.rose, borderColor: T.rose + '44' }}>
-              🚪 Logout
+            <button onClick={handleLogout} className="app-theme-btn" style={{ width: '100%', justifyContent: 'center', marginBottom: 10, background: T.rose + '22', color: T.rose, borderColor: T.rose + '44', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <LogOut size={16} /> Logout
             </button>
             <ThemeToggle />
             <div className="app-footer-tagline" style={{ color: T.textMuted }}>
