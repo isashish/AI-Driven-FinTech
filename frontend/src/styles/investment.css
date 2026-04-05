@@ -1,0 +1,42 @@
+/* =====================================================
+   Investment.css — All Investment page styles
+   ===================================================== */
+
+.inv-page { display: flex; flex-direction: column; gap: 20px; }
+
+/* Layout */
+.inv-grid { display: grid; grid-template-columns: 290px 1fr; gap: 20px; }
+.inv-controls { display: flex; flex-direction: column; gap: 16px; }
+.inv-charts { display: flex; flex-direction: column; gap: 16px; }
+
+/* Params card */
+.inv-params-title { font-weight: 800; font-size: 15px; margin-bottom: 20px; }
+
+/* Mini stats 2×2 */
+.inv-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.inv-mini-tile { border-radius: 14px; padding: 14px; }
+.inv-mini-label { font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+.inv-mini-value { font-weight: 900; font-size: 18px; font-family: 'JetBrains Mono', monospace; }
+
+/* Multiplier grad card */
+.inv-mult-label { color: rgba(255,255,255,0.75); font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+.inv-mult-value { color: #fff; font-size: 40px; font-weight: 900; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+.inv-mult-desc { color: rgba(255,255,255,0.75); font-size: 12px; margin-top: 8px; }
+
+/* Chart cards */
+.inv-chart-title { font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+.inv-chart-sub { font-size: 12px; margin-bottom: 16px; }
+.inv-chart-title-sm { font-weight: 800; font-size: 14px; margin-bottom: 14px; }
+.inv-sub-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+/* Breakpoints */
+@media (max-width: 1024px) {
+  .inv-grid        { grid-template-columns: 1fr; }
+  .inv-sub-charts  { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .inv-mini { grid-template-columns: 1fr 1fr; gap: 8px; }
+}
+@media (max-width: 400px) {
+  .inv-mini { grid-template-columns: 1fr; }
+}

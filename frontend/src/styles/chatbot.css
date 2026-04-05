@@ -1,0 +1,170 @@
+/* =====================================================
+   Chatbot.css — All Chatbot page styles
+   ===================================================== */
+
+.cb-page { display: flex; flex-direction: column; gap: 20px; }
+
+/* Layout */
+.cb-layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+.cb-sidebar { display: flex; flex-direction: column; gap: 14px; }
+
+/* Chat window card */
+.cb-window { padding: 0 !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+
+/* Chat header */
+.cb-header {
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cb-header-avatar {
+  width: 46px; height: 46px;
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.cb-header-info { min-width: 0; }
+.cb-header-name { font-weight: 800; font-size: 15px; }
+.cb-header-status { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 5px; }
+.cb-header-status-dot { width: 6px; height: 6px; border-radius: 50%; }
+.cb-header-badge { margin-left: auto; flex-shrink: 0; }
+
+/* Messages area */
+.cb-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-height: 440px;
+  min-height: 340px;
+}
+.cb-msg-row { display: flex; gap: 10px; }
+.cb-msg-row-user { justify-content: flex-end; }
+.cb-msg-row-bot  { justify-content: flex-start; }
+.cb-msg-avatar {
+  width: 34px; height: 34px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.cb-msg-bubble {
+  max-width: 76%;
+  padding: 13px 18px;
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+}
+.cb-msg-bubble-user {
+  border-radius: 18px 18px 4px 18px;
+  color: #fff;
+}
+.cb-msg-bubble-bot {
+  border-radius: 18px 18px 18px 4px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+/* Typing dots */
+.cb-typing { display: flex; align-items: center; gap: 10px; }
+.cb-typing-box {
+  border-radius: 16px;
+  padding: 12px 18px;
+  display: flex; gap: 5px; align-items: center;
+  border-width: 1px; border-style: solid;
+}
+.cb-typing-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+}
+
+/* Input bar */
+.cb-input-bar {
+  padding: 16px 20px;
+  display: flex;
+  gap: 10px;
+  border-top-width: 1px;
+  border-top-style: solid;
+}
+.cb-input-field {
+  flex: 1;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+  min-width: 0;
+  border-width: 1.5px;
+  border-style: solid;
+}
+.cb-send-btn {
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: inherit;
+  transition: opacity 0.2s;
+}
+.cb-send-btn:disabled { opacity: 0.6; }
+
+/* Sidebar panels */
+.cb-qs-title { font-weight: 800; font-size: 14px; margin-bottom: 14px; }
+.cb-qs-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1.5;
+  margin-bottom: 8px;
+  font-weight: 500;
+  font-family: inherit;
+  border-width: 1px;
+  border-style: solid;
+  transition: all 0.15s;
+}
+.cb-snap-title { font-weight: 800; font-size: 14px; margin-bottom: 14px; }
+.cb-snap-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+}
+.cb-snap-label { font-size: 12px; font-weight: 500; }
+.cb-snap-value { font-family: 'JetBrains Mono', monospace; font-weight: 800; font-size: 13px; }
+
+/* Animations */
+@keyframes blink {
+  0%, 100% { opacity: 0.3; transform: scale(0.8); }
+  50%       { opacity: 1;   transform: scale(1.2); }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* Breakpoints */
+@media (max-width: 1024px) {
+  .cb-layout  { grid-template-columns: 1fr; }
+  .cb-sidebar { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+}
+@media (max-width: 640px) {
+  .cb-sidebar    { grid-template-columns: 1fr; }
+  .cb-messages   { padding: 14px; max-height: 360px; min-height: 260px; }
+  .cb-input-bar  { padding: 12px 14px; gap: 8px; }
+  .cb-msg-bubble { max-width: 88%; }
+}
+@media (max-width: 400px) {
+  .cb-input-bar  { flex-direction: column; }
+  .cb-send-btn   { width: 100%; padding: 12px; }
+}

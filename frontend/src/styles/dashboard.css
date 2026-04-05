@@ -1,0 +1,218 @@
+/* =====================================================
+   Dashboard.css — All Dashboard page styles
+   ===================================================== */
+
+.db-page { display: flex; flex-direction: column; gap: 24px; }
+
+/* ── Hero ── */
+.db-hero {
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  height: 200px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+}
+.db-hero img { width: 100%; height: 100%; object-fit: cover; }
+.db-hero-overlay { position: absolute; inset: 0; }
+.db-hero-body {
+  position: absolute; inset: 0;
+  display: flex; align-items: center;
+  padding: 0 36px; gap: 32px;
+}
+.db-hero-greeting {
+  font-size: clamp(10px, 1.5vw, 13px);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.8);
+}
+.db-hero-title {
+  color: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-top: 4px;
+  line-height: 1.1;
+}
+.db-hero-title span { font-weight: 400; }
+.db-hero-right {
+  margin-left: auto;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+.db-hero-stat { text-align: center; }
+.db-hero-stat-label {
+  color: rgba(255,255,255,0.75);
+  font-size: 12px;
+  font-weight: 600;
+}
+.db-hero-score-num {
+  color: #fff;
+  font-size: 52px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1;
+}
+.db-hero-surplus-num {
+  color: #fff;
+  font-size: 30px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  line-height: 1.2;
+}
+.db-hero-stat-sub { color: rgba(255,255,255,0.7); font-size: 11px; }
+.db-hero-divider { width: 1px; height: 80px; background: rgba(255,255,255,0.25); }
+
+/* ── Stats grid ── */
+.db-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* ── Charts row ── */
+.db-charts {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: 20px;
+}
+.db-chart-title { font-weight: 800; font-size: 16px; }
+.db-chart-sub { font-size: 12px; margin-top: 2px; }
+.db-chart-head { margin-bottom: 16px; }
+.db-chart-head-sm { margin-bottom: 8px; }
+
+/* Pie legend */
+.db-pie-legend { display: flex; flex-wrap: wrap; gap: 6px; }
+.db-pie-legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+.db-pie-legend-dot { width: 8px; height: 8px; border-radius: 2px; }
+
+/* Health metric rows */
+.db-metrics { display: flex; flex-direction: column; gap: 6px; margin-top: 4px; }
+.db-metric-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.db-metric-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.db-metric-label { flex: 1; }
+.db-metric-bar-wrap { flex: 2; border-radius: 4px; height: 5px; }
+.db-metric-bar-fill { border-radius: 4px; height: 5px; transition: width 1s; }
+.db-metric-pct {
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* ── Goals section ── */
+.db-goals-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.db-goals-title { font-weight: 800; font-size: 16px; }
+.db-goals-sub { font-size: 12px; margin-top: 2px; }
+.db-goals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 14px;
+}
+.db-goal-card { border-radius: 14px; padding: 16px; }
+.db-goal-card-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.db-goal-name { font-weight: 700; font-size: 14px; }
+.db-goal-bar-track { border-radius: 6px; height: 7px; margin-bottom: 8px; }
+.db-goal-bar-fill { border-radius: 6px; height: 7px; transition: width 1s; }
+.db-goal-amounts {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+/* Breakpoints */
+@media (max-width: 1024px) {
+  .db-hero              { height: 170px; }
+  .db-hero-body         { padding: 0 24px; gap: 20px; }
+  .db-hero-title        { font-size: 26px; }
+  .db-hero-score-num    { font-size: 40px; }
+  .db-hero-surplus-num  { font-size: 22px; }
+  .db-hero-divider      { height: 60px; }
+  .db-stats             { grid-template-columns: repeat(2, 1fr); }
+  .db-charts            { grid-template-columns: 1fr; }
+  .db-goals-grid        { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+}
+@media (max-width: 640px) {
+
+  .db-hero {
+    height: 180px;
+    min-height: 170px;
+    border-radius: 18px;
+    padding: 0;
+  }
+
+  .db-hero-body {
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: nowrap; /* IMPORTANT */
+  }
+
+  /* LEFT SIDE */
+  .db-hero-left {
+    flex: 1;
+    min-width: 0; /* prevents overflow */
+  }
+
+  .db-hero-top-label {
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .db-hero-title {
+    font-size: 20px;
+    line-height: 1.2;
+    font-weight: 700;
+  }
+
+  .db-hero-title span {
+    display: block; /* Health Dashboard below */
+  }
+
+  /* RIGHT SIDE */
+  .db-hero-right {
+    display: flex;
+    align-items: center;
+    gap: 14px; /* reduce spacing */
+  }
+
+  .db-hero-score,
+  .db-hero-surplus {
+    text-align: center;
+  }
+
+  .db-hero-score-num {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .db-hero-surplus-num {
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .db-hero-divider {
+    height: 36px;
+    width: 1px;
+    opacity: 0.4;
+  }
+}
+@media (max-width: 400px) {
+  .db-hero              { height: 120px; }
+  .db-hero-body         { padding: 0 12px; }
+  .db-hero-title        { font-size: 17px; }
+  .db-hero-right        { display: none; }
+  .db-stats             { grid-template-columns: 1fr; gap: 8px; }
+}

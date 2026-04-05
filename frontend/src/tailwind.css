@@ -1,0 +1,24 @@
+/* =====================================================
+   FinAI — Master CSS Entry Point
+   All page CSS files are imported here so they flow
+   through the Tailwind PostCSS pipeline together.
+   ===================================================== */
+
+/* App shell */
+@import './styles/App.css';
+
+/* One file per page */
+@import './styles/dashboard.css';
+@import './styles/profile.css';
+@import './styles/goals.css';
+@import './styles/investment.css';
+@import './styles/debt.css';
+@import './styles/whatif.css';
+@import './styles/chatbot.css';
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
