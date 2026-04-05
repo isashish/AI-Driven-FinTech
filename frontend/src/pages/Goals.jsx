@@ -3,24 +3,43 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Input, Badge, ImgBanner, ChartTooltip } from '../components/UI.jsx';
 import { fmtK, fmt, IMGS } from '../utils.jsx';
+import { goalsAPI } from '../api';
 
 const GOAL_ICONS = { Home:'🏠',Retirement:'🏖️',Car:'🚗',Education:'🎓',Business:'💼',Emergency:'🛡️',Wedding:'💍',Travel:'✈️' };
 const getIcon = name => GOAL_ICONS[Object.keys(GOAL_ICONS).find(k => name.includes(k))] || '🎯';
 
-export default function Goals({ goals, setGoals, profile }) {
+export default function Goals({ goals, onUpdate, profile }) {
   const { T } = useTheme();
   const [form, setForm] = useState({ name: '', target: 500000, saved: 0, priority: 'Medium' });
+  const [loading, setLoading] = useState(false);
 
-  const addGoal = () => {
-    if (!form.name.trim()) return;
-    setGoals(g => [...g, { ...form, id: Date.now() }]);
-    setForm({ name: '', target: 500000, saved: 0, priority: 'Medium' });
+  const addGoal = async () => {
+    if (!form.name.trim() || loading) return;
+    setLoading(true);
+    try {
+      await goalsAPI.create(form);
+      setForm({ name: '', target: 500000, saved: 0, priority: 'Medium' });
+      await onUpdate();
+    } catch (err) {
+      console.error('Failed to add goal:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteGoal = async (id) => {
+    try {
+      await goalsAPI.delete(id);
+      await onUpdate();
+    } catch (err) {
+      console.error('Failed to delete goal:', err);
+    }
   };
 
   const barData = goals.map(g => ({
-    name: g.name.slice(0, 10),
-    Saved: g.saved,
-    Remaining: Math.max(0, g.target - g.saved),
+    name: (g.name || "").slice(0, 10),
+    Saved: g.saved || 0,
+    Remaining: Math.max(0, (g.target || 0) - (g.saved || 0)),
   }));
 
   return (
@@ -59,10 +78,11 @@ export default function Goals({ goals, setGoals, profile }) {
             </div>
             <button
               onClick={addGoal}
+              disabled={loading}
               className="gl-add-btn"
-              style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, boxShadow: `0 4px 16px ${T.teal}44` }}
+              style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, boxShadow: `0 4px 16px ${T.teal}44`, opacity: loading ? 0.7 : 1 }}
             >
-              + Add Goal
+              {loading ? 'Adding...' : '+ Add Goal'}
             </button>
           </Card>
 
@@ -95,13 +115,13 @@ export default function Goals({ goals, setGoals, profile }) {
             </Card>
           )}
           {goals.map(g => {
-            const pct    = Math.min(100, Math.round(g.saved / g.target * 100));
-            const months = profile.savings > 0 ? Math.ceil((g.target - g.saved) / profile.savings) : null;
+            const pct    = Math.min(100, Math.round((g.saved || 0) / (g.target || 1) * 100));
+            const months = profile.savings > 0 ? Math.ceil(((g.target || 0) - (g.saved || 0)) / profile.savings) : null;
             const c      = g.priority === 'High' ? T.rose : g.priority === 'Medium' ? T.amber : T.blue;
             return (
-              <Card key={g.id} hover style={{ position: 'relative' }}>
+              <Card key={g._id || g.id} hover style={{ position: 'relative' }}>
                 <button
-                  onClick={() => setGoals(gs => gs.filter(x => x.id !== g.id))}
+                  onClick={() => deleteGoal(g._id)}
                   className="gl-card-remove"
                   style={{ background: T.roseLight, color: T.rose }}
                 >
@@ -123,7 +143,7 @@ export default function Goals({ goals, setGoals, profile }) {
                 </div>
                 <div className="gl-detail">
                   {[
-                    { l: 'Remaining',    v: fmt(Math.max(0, g.target - g.saved))           },
+                    { l: 'Remaining',    v: fmt(Math.max(0, (g.target || 0) - (g.saved || 0)))           },
                     { l: 'Time to Goal', v: months ? `${months} months` : '–'              },
                     { l: 'In Years',     v: months ? `${(months/12).toFixed(1)} yr` : '–'  },
                   ].map(({ l, v }) => (

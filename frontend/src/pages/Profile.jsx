@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Input, ScoreRing, Badge, ImgBanner } from '../components/UI.jsx';
 import { calcHealth, fmtK, IMGS } from '../utils.jsx';
+import { profileAPI } from '../api';
 
-export default function Profile({ profile, setProfile, user }) {
+export default function Profile({ profile, setProfile, onUpdate }) {
   const { T } = useTheme();
 
   /* -------------------------
@@ -25,24 +26,33 @@ export default function Profile({ profile, setProfile, user }) {
   const surplus = Math.max(0, profile.income - profile.expenses - profile.emi);
 
   /* -------------------------
-     UPDATE FUNCTION (FIXED)
+     UPDATE FUNCTION
   ------------------------- */
   const update = key => val =>
     setProfile(prev => ({
       ...prev,
-      [key]: typeof val === "string" && !isNaN(val) ? Number(val) : val
+      [key]: typeof val === "string" && !isNaN(val) && val.trim() !== "" ? Number(val) : val
     }));
 
   /* -------------------------
      SAVE PERSONAL INFO
   ------------------------- */
-  const handlePersonalSave = () => {
+  const handlePersonalSave = async () => {
     setSavingInfo(true);
-
-    setTimeout(() => {
-      setSavingInfo(false);
+    try {
+      await profileAPI.update({
+        name: profile.name,
+        email: profile.email,
+        age: profile.age,
+        occupation: profile.occupation
+      });
+      await onUpdate(); // Refresh the whole profile from DB
       setInfoLocked(true);
-    }, 1000);
+    } catch (err) {
+      console.error('Failed to update personal info:', err);
+    } finally {
+      setSavingInfo(false);
+    }
   };
 
   const handleEditInfo = () => {
@@ -52,14 +62,25 @@ export default function Profile({ profile, setProfile, user }) {
   /* -------------------------
      SAVE FINANCIAL PROFILE
   ------------------------- */
-  const saveProfile = () => {
+  const saveProfile = async () => {
     setSaving(true);
-    setTimeout(() => {
-      localStorage.setItem("financialProfile", JSON.stringify(profile));
-      setSaving(false);
+    try {
+      await profileAPI.update({
+        income: profile.income,
+        expenses: profile.expenses,
+        emi: profile.emi,
+        savings: profile.savings,
+        investments: profile.investments,
+        emergency: profile.emergency
+      });
+      await onUpdate(); // Refresh parent
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    }, 800);
+    } catch (err) {
+      console.error('Failed to update financial profile:', err);
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* -------------------------

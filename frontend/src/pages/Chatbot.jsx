@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Badge, ImgBanner } from '../components/UI.jsx';
 import { calcHealth, fmtK, IMGS } from '../utils.jsx';
+import { chatAPI } from '../api';
 
 export default function Chatbot({ profile }) {
   const { T } = useTheme();
@@ -15,49 +16,52 @@ export default function Chatbot({ profile }) {
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [msgs]);
 
+  // Load history on mount
+  useEffect(() => {
+    const loadHistory = async () => {
+      try {
+        const res = await chatAPI.getHistory();
+        if (res.data.messages && res.data.messages.length > 0) {
+          setMsgs(prev => [
+            prev[0], // Keep welcome message
+            ...res.data.messages.map(m => ({ role: m.role, text: m.content }))
+          ]);
+        }
+      } catch (err) {
+        console.error('Failed to load chat history:', err);
+      }
+    };
+    loadHistory();
+  }, []);
+
   const score      = calcHealth(profile);
   const scoreColor = score >= 75 ? T.teal : score >= 50 ? T.amber : T.rose;
 
-  const sys = `You are an expert AI Financial Advisor for an Indian user. Be personalized, concise, and practical.
-
-User Profile:
-- Monthly Income: ₹${profile.income?.toLocaleString('en-IN') || 'Not set'}
-- Monthly Expenses: ₹${profile.expenses?.toLocaleString('en-IN') || 'Not set'}
-- Monthly Savings: ₹${profile.savings?.toLocaleString('en-IN') || 'Not set'}
-- Monthly Investments: ₹${profile.investments?.toLocaleString('en-IN') || 'Not set'}
-- Monthly EMI: ₹${profile.emi?.toLocaleString('en-IN') || 'Not set'}
-- Emergency Fund: ₹${profile.emergency?.toLocaleString('en-IN') || 'Not set'}
-- Financial Health Score: ${score}/100
-
-Give sharp, personalized advice using Indian financial context (₹, RBI, SEBI, SIPs, PPF, ELSS, FD, NPS, etc.). Keep under 200 words. Use numbered points or bullets when listing items.`;
-
   const send = useCallback(async () => {
     if (!input.trim() || loading) return;
+    
     const userMsg = { role: 'user', text: input };
     setMsgs(m => [...m, userMsg]);
     setInput('');
     setLoading(true);
+    
     try {
-      const history = [...msgs, userMsg].map(m => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.text }));
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, system: sys, messages: history }),
-      });
-      const d = await res.json();
-      const reply = d.content?.map(c => c.text || '').join('') || 'Sorry, could not process that.';
+      const res = await chatAPI.sendMessage(userMsg.text);
+      const reply = res.data.reply || 'Sorry, I could not process that.';
       setMsgs(m => [...m, { role: 'assistant', text: reply }]);
-    } catch {
-      setMsgs(m => [...m, { role: 'assistant', text: '⚠️ Connection error. Please try again.' }]);
+    } catch (err) {
+      console.error('Chat error:', err);
+      setMsgs(m => [...m, { role: 'assistant', text: '⚠️ Connection error. Please make sure the backend is running and your API key is set.' }]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [input, loading, msgs, sys]);
+  }, [input, loading]);
 
   const suggestions = [
     'How can I improve my financial health score?',
     'Should I prepay my home loan or invest in SIP?',
     'How much corpus do I need for retirement?',
-    'Best tax-saving investments under 80C for me?',
+    'Best tax-saving investments for me?',
     'How to build a 6-month emergency fund fast?',
   ];
 

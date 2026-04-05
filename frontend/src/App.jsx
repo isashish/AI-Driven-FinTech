@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
 import MobileNavbar from './components/MobileNavbar';
 
@@ -14,6 +14,7 @@ import Login      from './pages/Login';
 import Signup     from './pages/Signup';
 
 import { calcHealth } from './utils.jsx';
+import { profileAPI, goalsAPI } from './api';
 
 const NAV = [
   { id: 'dashboard',  label: 'Dashboard',        emoji: '📊' },
@@ -46,23 +47,68 @@ function ThemeToggle() {
 function AppInner() {
   const { T, isDark } = useTheme();
   const [screen, setScreen] = useState('landing');
-  const [page,        setPage]        = useState('profile');
+  const [page,        setPage]        = useState('dashboard'); // Default to dashboard
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [loading,     setLoading]     = useState(true);
+  
   const [profile, setProfile] = useState({
-    income: 80000, expenses: 35000, savings: 15000,
-    emi: 12000, investments: 10000, emergency: 90000,
+    income: 0, expenses: 0, savings: 0,
+    emi: 0, investments: 0, emergency: 0,
   });
-  const [goals, setGoals] = useState([
-    { id: 1, name: 'Emergency Fund',    target: 210000,   saved: 90000,  priority: 'High'   },
-    { id: 2, name: 'Home Down Payment', target: 1500000,  saved: 200000, priority: 'High'   },
-    { id: 3, name: 'Retirement Corpus', target: 10000000, saved: 500000, priority: 'Medium' },
-  ]);
+  const [goals, setGoals] = useState([]);
+
+  // Check auth and fetch data
+  useEffect(() => {
+    const init = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        setScreen('app');
+        await fetchData();
+      }
+      setLoading(false);
+    };
+    init();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      const [pRes, gRes] = await Promise.all([
+        profileAPI.get(),
+        goalsAPI.getAll()
+      ]);
+      setProfile(pRes.data.profile);
+      setGoals(gRes.data.goals);
+    } catch (err) {
+      console.error('Failed to fetch data:', err);
+      // If unauthorized, logout
+      if (err.response?.status === 401) handleLogout();
+    }
+  };
+
+  const handleLogin = async () => {
+    setLoading(true);
+    await fetchData();
+    setScreen('app');
+    setLoading(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setScreen('landing');
+  };
 
   const score      = calcHealth(profile);
   const scoreColor = score >= 75 ? T.teal : score >= 50 ? T.amber : T.rose;
   const navigate   = id => { setPage(id); setSidebarOpen(false); };
 
   const globalStyle = `body { background: ${T.bg}; color: ${T.text}; }`;
+
+  if (loading && screen === 'app') return (
+    <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: T.bg, color: T.text }}>
+      <div className="spinner">⌛ Loading your finances...</div>
+    </div>
+  );
 
   if (screen === 'landing') return (
     <><style>{globalStyle}</style>
@@ -71,18 +117,18 @@ function AppInner() {
 
   if (screen === 'login') return (
     <><style>{globalStyle}</style>
-    <Login onLogin={() => setScreen('app')} onGoSignup={() => setScreen('signup')} onGoLanding={() => setScreen('landing')} /></>
+    <Login onLogin={handleLogin} onGoSignup={() => setScreen('signup')} onGoLanding={() => setScreen('landing')} /></>
   );
 
   if (screen === 'signup') return (
     <><style>{globalStyle}</style>
-    <Signup onSignup={() => setScreen('app')} onGoLogin={() => setScreen('login')} onGoLanding={() => setScreen('landing')} /></>
+    <Signup onSignup={handleLogin} onGoLogin={() => setScreen('login')} onGoLanding={() => setScreen('landing')} /></>
   );
 
   const pages = {
-    dashboard:  <Dashboard  profile={profile} goals={goals} />,
-    profile:    <Profile    profile={profile} setProfile={setProfile} />,
-    goals:      <Goals      goals={goals} setGoals={setGoals} profile={profile} />,
+    dashboard:  <Dashboard  profile={profile} goals={goals} refreshData={fetchData} />,
+    profile:    <Profile    profile={profile} setProfile={setProfile} onUpdate={fetchData} />,
+    goals:      <Goals      goals={goals} setGoals={setGoals} profile={profile} onUpdate={fetchData} />,
     investment: <Investment />,
     debt:       <Debt />,
     whatif:     <WhatIf     profile={profile} />,
@@ -91,15 +137,15 @@ function AppInner() {
 
   return (
     <>
-      {/* Theme-reactive CSS vars — only dynamic colours live here */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap');
         body { background: ${T.bg}; color: ${T.text}; }
         ::-webkit-scrollbar-thumb { background: ${T.border}; }
         input[type=range] { background: ${T.border}; }
         select option { background: ${T.surface}; color: ${T.text}; }
+        .spinner { font-size: 20px; font-weight: 600; animate: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
       `}</style>
-
      
       <MobileNavbar
         toggleSidebar={() => setSidebarOpen(o => !o)}
@@ -165,6 +211,9 @@ function AppInner() {
           </nav>
 
           <div className="app-footer" style={{ borderTop: `1px solid ${T.border}` }}>
+            <button onClick={handleLogout} className="app-theme-btn" style={{ width: '100%', marginBottom: 10, background: T.rose + '22', color: T.rose, borderColor: T.rose + '44' }}>
+              🚪 Logout
+            </button>
             <ThemeToggle />
             <div className="app-footer-tagline" style={{ color: T.textMuted }}>
               AI-Driven FinTech Platform<br />

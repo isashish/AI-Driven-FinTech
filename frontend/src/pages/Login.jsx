@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { authAPI } from '../api';
 import '../styles/auth.css';
 
 export default function Login({ onLogin, onGoSignup, onGoLanding }) {
@@ -12,12 +13,26 @@ export default function Login({ onLogin, onGoSignup, onGoLanding }) {
 
   const handleSubmit = async () => {
     setError('');
-    if (!form.email || !form.password) { setError('Please fill in all fields.'); return; }
+    if (!form.email || !form.password) { 
+      setError('Please fill in all fields.'); 
+      return; 
+    }
+    
     setLoading(true);
-    // Simulate auth — replace with your real auth logic
-    await new Promise(r => setTimeout(r, 900));
-    setLoading(false);
-    onLogin();          // navigate into the app
+    try {
+      const res = await authAPI.login(form);
+      const { token, user } = res.data;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      onLogin(); // navigate into the app
+    } catch (err) {
+      console.error('Login error:', err);
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

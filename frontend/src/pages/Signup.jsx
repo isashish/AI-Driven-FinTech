@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
+import { authAPI } from '../api';
 import '../styles/auth.css';
 
 export default function Signup({ onSignup, onGoLogin, onGoLanding }) {
@@ -15,17 +16,32 @@ export default function Signup({ onSignup, onGoLogin, onGoLanding }) {
     if (!form.name || !form.email || !form.password || !form.confirm) {
       setError('Please fill in all fields.'); return;
     }
-    if (form.password.length < 8) {
-      setError('Password must be at least 8 characters.'); return;
+    if (form.password.length < 6) {
+      setError('Password must be at least 6 characters.'); return;
     }
     if (form.password !== form.confirm) {
       setError('Passwords do not match.'); return;
     }
+    
     setLoading(true);
-    // Simulate registration — replace with your real auth logic
-    await new Promise(r => setTimeout(r, 1000));
-    setLoading(false);
-    onSignup();         // navigate into the app
+    try {
+      const res = await authAPI.signup({
+        name: form.name,
+        email: form.email,
+        password: form.password
+      });
+      const { token, user } = res.data;
+      
+      localStorage.setItem('token', token);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      onSignup(); // navigate into the app
+    } catch (err) {
+      console.error('Signup error:', err);
+      setError(err.response?.data?.message || 'Signup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const strength = (() => {
