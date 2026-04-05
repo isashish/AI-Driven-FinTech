@@ -14,30 +14,25 @@ Vercel is serverless and does not include a database. You must use a cloud-hoste
 
 ## 2. Deploying the Backend
 1. Go to the [Vercel Dashboard](https://vercel.com/dashboard) and click **"Add New" > "Project"**.
-2. Select your GitHub repository.
-3. **Project Name**: `ai-fintech-backend` (or similar).
-4. **Root Directory**: Select `Backend`.
-5. **Framework Preset**: Select `Other` (Vercel will detect `vercel.json`).
-6. **Environment Variables**: Add the following:
-   - `MONGODB_URI`: Your MongoDB Atlas string.
-   - `JWT_SECRET`: A long random string.
+2. Click **Import** next to your GitHub repository.
+3. On the **"Configure Project"** screen, look for **"Root Directory"**. 
+4. Click the small **"Edit"** link next to the folder path (it might just show `./`). Select the `Backend` folder and click **Continue**.
+5. **Framework Preset**: This should automatically switch to **"Other"** (Vercel will correctly use your `vercel.json`).
+6. **Environment Variables**: Scroll down and click the **"Environment Variables"** bar to expand it. Add your keys:
+   - `MONGODB_URI`: Your Atlas string.
+   - `JWT_SECRET`: Any random strong string.
    - `CLAUDE_API_KEY`: Your Anthropic key.
-   - `FRONTEND_URL`: Leave blank or set to the URL of your frontend project after it's deployed.
 7. Click **Deploy**.
 
 ---
 
 ## 3. Deploying the Frontend
-1. Go to the Vercel Dashboard and click **"Add New" > "Project"** again.
-2. Select the **same** GitHub repository.
-3. **Project Name**: `ai-fintech-frontend`.
-4. **Root Directory**: Select `frontend`.
-5. **Framework Preset**: Select `Vite`.
-6. **Build Command**: `npm run build`
-7. **Output Directory**: `dist`
-8. **Environment Variables**: Add the following:
-   - `VITE_API_BASE_URL`: The URL of your **Backend** deployment + `/api` (e.g., `https://ai-fintech-backend.vercel.app/api`).
-9. Click **Deploy**.
+1. Repeat: **"Add New" > "Project"** and select the **same** repository.
+2. **Root Directory**: Click the small **"Edit"** link and select the `frontend` folder.
+3. **Framework Preset**: Vercel should auto-detect **"Vite"**.
+4. **Environment Variables**: Expand the accordion and add:
+   - `VITE_API_BASE_URL`: The URL of your **Backend** (e.g., `https://your-backend.vercel.app/api`).
+5. Click **Deploy**.
 
 ---
 
