@@ -12,6 +12,9 @@ import Chatbot    from './pages/Chatbot';
 import Landing    from './pages/Landing';
 import Login      from './pages/Login';
 import Signup     from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
+import { GoogleOAuthProvider } from '@react-oauth/google';
 
 import { calcHealth } from './utils.jsx';
 import { profileAPI, goalsAPI } from './api';
@@ -58,11 +61,22 @@ function AppInner() {
   });
   const [goals, setGoals] = useState([]);
 
+  const [resetToken, setResetToken] = useState(null);
+
   // Check auth and fetch data
   useEffect(() => {
     const init = async () => {
+      // Handle password reset URL
+      if (window.location.pathname.startsWith('/resetpassword/')) {
+        const token = window.location.pathname.split('/').pop();
+        if (token) {
+          setResetToken(token);
+          setScreen('resetpassword');
+        }
+      }
+
       const token = localStorage.getItem('token');
-      if (token) {
+      if (token && !window.location.pathname.startsWith('/resetpassword/')) {
         setScreen('app');
         await fetchData();
       }
@@ -90,12 +104,14 @@ function AppInner() {
     setLoading(true);
     await fetchData();
     setScreen('app');
+    window.history.pushState({}, '', '/'); // Reset url path 
     setLoading(false);
   };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    window.history.pushState({}, '', '/');
     setScreen('landing');
   };
 
@@ -118,12 +134,22 @@ function AppInner() {
 
   if (screen === 'login') return (
     <><style>{globalStyle}</style>
-    <Login onLogin={handleLogin} onGoSignup={() => setScreen('signup')} onGoLanding={() => setScreen('landing')} /></>
+    <Login onLogin={handleLogin} onGoSignup={() => setScreen('signup')} onGoLanding={() => setScreen('landing')} onGoForgot={() => setScreen('forgotpassword')} /></>
   );
 
   if (screen === 'signup') return (
     <><style>{globalStyle}</style>
     <Signup onSignup={handleLogin} onGoLogin={() => setScreen('login')} onGoLanding={() => setScreen('landing')} /></>
+  );
+
+  if (screen === 'forgotpassword') return (
+    <><style>{globalStyle}</style>
+    <ForgotPassword onGoLogin={() => setScreen('login')} /></>
+  );
+
+  if (screen === 'resetpassword') return (
+    <><style>{globalStyle}</style>
+    <ResetPassword token={resetToken} onGoLogin={() => { window.history.pushState({}, '', '/'); setScreen('login'); }} /></>
   );
 
   const pages = {
@@ -235,5 +261,10 @@ function AppInner() {
 }
 
 export default function App() {
-  return <ThemeProvider><AppInner /></ThemeProvider>;
+  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '123456789-placeholder.apps.googleusercontent.com';
+  return (
+    <GoogleOAuthProvider clientId={clientId}>
+      <ThemeProvider><AppInner /></ThemeProvider>
+    </GoogleOAuthProvider>
+  );
 }

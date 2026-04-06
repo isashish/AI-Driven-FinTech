@@ -23,6 +23,9 @@ api.interceptors.request.use((config) => {
 export const authAPI = {
   login: (credentials) => api.post('/auth/login', credentials),
   signup: (userData) => api.post('/auth/register', userData),
+  googleLogin: (credential) => api.post('/auth/google', { credential }),
+  forgotPassword: (email) => api.post('/auth/forgotpassword', { email }),
+  resetPassword: (token, password) => api.put(`/auth/resetpassword/${token}`, { password }),
   me: () => api.get('/auth/me'),
 };
 
