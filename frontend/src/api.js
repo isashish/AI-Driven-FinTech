@@ -34,6 +34,22 @@ export const profileAPI = {
   update: (data) => api.put('/profile', data),
   getDashboard: () => api.get('/profile/dashboard'),
   getHealthScore: () => api.get('/profile/health-score'),
+
+
+
+  updateAssets: async (assets) => {
+    const response = await fetch('/api/profile/assets', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(assets)
+    });
+    return response.json();
+  },
+
+  getAssets: async () => {
+    const response = await fetch('/api/profile/assets');
+    return response.json();
+  }
 };
 
 export const goalsAPI = {
