@@ -1,49 +1,48 @@
-# 🚀 Deployment Guide: AI-FinTech (Monorepo)
+# 🚀 Production Deployment: AI-FinTech (Triple-Stack)
 
-To deploy your full-stack application on Vercel, you will need to follow these steps. Since you have a monorepo structure, you will create **two separate projects** in the Vercel Dashboard (one for Backend and one for Frontend).
-
----
-
-## 1. Database Setup (Crucial)
-Vercel is serverless and does not include a database. You must use a cloud-hosted MongoDB instance (like **MongoDB Atlas**).
-1. Go to [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) and create a free cluster.
-2. Get your connection string (e.g., `mongodb+srv://<username>:<password>@cluster.mongodb.net/AI-FinTech`).
-3. Ensure you allow access from "Anywhere" (0.0.0.0/0) in Atlas Network Access settings, as Vercel IP addresses are dynamic.
+Since your project contains **Frontend (React)**, **Backend (Node.js)**, and **AI Worker (Python)**, you should deploy them as three separate projects on Vercel or similar platforms.
 
 ---
 
-## 2. Deploying the Backend
-1. Go to the [Vercel Dashboard](https://vercel.com/dashboard) and click **"Add New" > "Project"**.
-2. Click **Import** next to your GitHub repository.
-3. On the **"Configure Project"** screen, look for **"Root Directory"**. 
-4. Click the small **"Edit"** link next to the folder path (it might just show `./`). Select the `Backend` folder and click **Continue**.
-5. **Framework Preset**: This should automatically switch to **"Other"** (Vercel will correctly use your `vercel.json`).
-6. **Environment Variables**: Scroll down and click the **"Environment Variables"** bar to expand it. Add your keys:
-   - `MONGODB_URI`: Your Atlas string.
-   - `JWT_SECRET`: Any random strong string.
-   - `CLAUDE_API_KEY`: Your Anthropic key.
-7. Click **Deploy**.
+## 1. AI Worker (The ML Brain)
+*   **Platform**: [Vercel](https://vercel.com) or [Render](https://render.com)
+*   **Root Directory**: `ai_worker`
+*   **Build Command**: `pip install -r requirements.txt`
+*   **Environment Variables**: 
+    - `GEMINI_API_KEY`: (Optional for ML mode)
+*   **Note**: Copy the provided `vercel.json` in the `ai_worker` folder to ensure it runs as a serverless function.
 
 ---
 
-## 3. Deploying the Frontend
-1. Repeat: **"Add New" > "Project"** and select the **same** repository.
-2. **Root Directory**: Click the small **"Edit"** link and select the `frontend` folder.
-3. **Framework Preset**: Vercel should auto-detect **"Vite"**.
-4. **Environment Variables**: Expand the accordion and add:
-   - `VITE_API_BASE_URL`: The URL of your **Backend** (e.g., `https://your-backend.vercel.app/api`).
-5. Click **Deploy**.
+## 2. Backend (The Node.js API)
+*   **Platform**: [Vercel](https://vercel.com)
+*   **Root Directory**: `Backend`
+*   **Environment Variables**:
+    - `MONGODB_URI`: Your MongoDB Atlas connection string.
+    - `JWT_SECRET`: A secure random string.
+    - `FRONTEND_URL`: The URL of your **deployed frontend** (Step 3).
+    - `AI_WORKER_URL`: The URL of your **deployed AI worker** (Step 1).
+*   **CORS**: The backend will automatically whitelist your deployed frontend once `FRONTEND_URL` is set.
 
 ---
 
-## 4. Final Updates (Sync URLs)
-Once both are deployed:
-1. Go to your **Backend** project on Vercel > Settings > Environment Variables.
-2. Update/Add `FRONTEND_URL` with your **Frontend's** Vercel URL.
-3. Redeploy the backend for changes to take effect.
+## 3. Frontend (The React App)
+*   **Platform**: [Vercel](https://vercel.com)
+*   **Root Directory**: `frontend`
+*   **Framework Preset**: Vite
+*   **Environment Variables**:
+    - `VITE_API_BASE_URL`: The URL of your **deployed backend** + `/api` (e.g., `https://backend.vercel.app/api`)
+    - `VITE_GOOGLE_CLIENT_ID`: Your Google OAuth Client ID.
 
 ---
 
-### Important Notes:
-- **CORS**: The backend is configured to allow requests from the origin specified in `FRONTEND_URL`. 
-- **Serverless**: Vercel will spin up serverless functions for each route in your backend automatically based on the `vercel.json` I created for you.
+## 🔄 Final Sync Checklist
+1. Deploy **AI Worker** first -> Get its URL.
+2. Deploy **Backend** next -> Add `AI_WORKER_URL` to settings.
+3. Deploy **Frontend** -> Add `VITE_API_BASE_URL`.
+4. **Final Step**: Go back to **Backend** settings and add the `FRONTEND_URL` from Step 3.
+5. **Redeploy** both for the connection to "lock in."
+
+## 🔒 Security Reminder
+- Never commit your `.env` files.
+- Ensure MongoDB Atlas Network Access is set to `0.0.0.0/0` (Allow all) so Vercel can connect.
