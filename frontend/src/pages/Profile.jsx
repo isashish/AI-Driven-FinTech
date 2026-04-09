@@ -886,21 +886,21 @@ export default function Profile({ profile, setProfile, onUpdate }) {
                   <div style={{ fontSize: 20 }}>{expenditureLevel.color}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: expenditureLevel.textColor }}>Expenses</div>
                   <div style={{ fontSize: 10, color: T.textMuted }}>
-                    {profile.income > 0 ? Math.round((profile.expenses / profile.income) * 100) : 0}%
+                    {profile.income > 0 ? ((profile.expenses / profile.income) * 100).toFixed(1) : '0.0'}%
                   </div>
                 </div>
                 <div style={{ textAlign: 'center', padding: 8, background: T.bg, borderRadius: 8 }}>
                   <div style={{ fontSize: 20 }}>{emiLevel.color}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: emiLevel.textColor }}>EMI/Debt</div>
                   <div style={{ fontSize: 10, color: T.textMuted }}>
-                    {profile.income > 0 ? Math.round((profile.emi / profile.income) * 100) : 0}%
+                    {profile.income > 0 ? ((profile.emi / profile.income) * 100).toFixed(1) : '0.0'}%
                   </div>
                 </div>
                 <div style={{ textAlign: 'center', padding: 8, background: T.bg, borderRadius: 8 }}>
                   <div style={{ fontSize: 20 }}>{investmentLevel.color}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: investmentLevel.textColor }}>Investments</div>
                   <div style={{ fontSize: 10, color: T.textMuted }}>
-                    {profile.income > 0 ? Math.round((profile.investments / profile.income) * 100) : 0}%
+                    {profile.income > 0 ? ((profile.investments / profile.income) * 100).toFixed(1) : '0.0'}%
                   </div>
                 </div>
               </div>
@@ -908,10 +908,10 @@ export default function Profile({ profile, setProfile, onUpdate }) {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 8 }}>
               {[
-                { l: 'Savings Rate', v: profile.income ? `${Math.round(calculatedSavings / profile.income * 100)}%` : '0%', c: T.teal || '#14b8a6' },
-                { l: 'DTI Ratio', v: profile.income ? `${Math.round(profile.emi / profile.income * 100)}%` : '0%', c: T.rose || '#ef4444' },
+                { l: 'Savings Rate', v: profile.income ? `${((calculatedSavings / profile.income) * 100).toFixed(1)}%` : '0.0%', c: T.teal || '#14b8a6' },
+                { l: 'DTI Ratio', v: profile.income ? `${((profile.emi / profile.income) * 100).toFixed(1)}%` : '0.0%', c: T.rose || '#ef4444' },
                 { l: 'Monthly Surplus', v: fmtK(surplus), c: T.blue || '#3b82f6' },
-                { l: 'Invest Rate', v: profile.income ? `${Math.round(profile.investments / profile.income * 100)}%` : '0%', c: T.violet || '#8b5cf6' },
+                { l: 'Invest Rate', v: profile.income ? `${((profile.investments / profile.income) * 100).toFixed(1)}%` : '0.0%', c: T.violet || '#8b5cf6' },
               ].map(({ l, v, c }) => (
                 <div key={l} style={{ background: T.bg, borderRadius: 12, padding: 12, border: `1px solid ${T.border || '#e5e7eb'}` }}>
                   <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 4, fontWeight: 600 }}>{l}</div>
