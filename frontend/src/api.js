@@ -38,7 +38,8 @@ export const profileAPI = {
 
 
   updateAssets: (assets) => api.put('/profile/assets', assets),
-  getAssets: () => api.get('/profile/assets')
+  getAssets: () => api.get('/profile/assets'),
+  scan: (imageBase64) => api.post('/profile/scan', { imageBase64 })
 };
 
 export const goalsAPI = {

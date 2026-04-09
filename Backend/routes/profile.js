@@ -5,6 +5,7 @@ const Loan = require('../models/Loan');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
 const { buildDashboardSummary, calculateHealthScore } = require('../services/financial');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const router = express.Router();
 
@@ -159,6 +160,58 @@ router.get('/health-score', async (req, res) => {
   } catch (err) {
     console.error('Health score error:', err);
     res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// ─── POST /api/profile/scan ──────────────────────────────────────────────
+router.post('/scan', async (req, res) => {
+  const { imageBase64, mimeType = 'image/jpeg' } = req.body;
+  if (!imageBase64) return res.status(400).json({ message: 'Image data is required.' });
+
+  try {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey || apiKey === 'your_gemini_api_key_here') {
+      return res.status(400).json({ message: 'AI Scanner is not configured (missing API Key).' });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+
+    const prompt = `
+      You are an AI financial document scanner. Analyze the attached image (bank statement, receipt, or asset document).
+      Extract financial assets or liabilities.
+      Return ONLY a JSON array of objects with the following structure:
+      [{ "label": "String", "value": Number, "type": "physical" | "liquid" | "liability", "icon": "Emoji" }]
+      
+      Guidelines:
+      - If it's a bank balance, type is "liquid", icon is "💰".
+      - If it's a loan/debt, type is "liability", icon is "💳".
+      - If it's a property/vehicle, type is "physical", icon is "🏠" or "🚗".
+      - Return an empty array if no clear data is found.
+      - Do not include Markdown formatting or code blocks in your response.
+    `;
+
+    // Clean base64 string
+    const base64Data = imageBase64.replace(/^data:image\\/\\w+;base64,/, '');
+
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64Data,
+          mimeType: mimeType
+        }
+      }
+    ]);
+
+    const responseText = result.response.text().trim();
+    const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
+    const data = JSON.parse(cleanJson);
+
+    res.json({ success: true, extracted: data });
+  } catch (err) {
+    console.error('Scan error:', err);
+    res.status(500).json({ message: 'Failed to process document with AI.' });
   }
 });
 

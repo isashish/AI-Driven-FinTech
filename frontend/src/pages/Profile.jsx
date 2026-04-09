@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Input, ScoreRing, Badge, ImgBanner } from '../components/UI.jsx';
 import { calcHealth, fmtK, IMGS } from '../utils.jsx';
@@ -58,6 +58,10 @@ export default function Profile({ profile, setProfile, onUpdate }) {
   const [selectedAssetOption, setSelectedAssetOption] = useState('');
   const [assetValue, setAssetValue] = useState('');
   const [showAssetModal, setShowAssetModal] = useState(false);
+
+  // Scanner States
+  const [scanning, setScanning] = useState(false);
+  const fileInputRef = useRef(null);
 
   /* -------------------------
      FINANCIAL FIELDS WITH SIMILAR STYLE
@@ -146,6 +150,81 @@ export default function Profile({ profile, setProfile, onUpdate }) {
     if (expenseRatio <= 30) return { level: 'Low', color: '🟢', textColor: T.green || '#10b981' };
     if (expenseRatio <= 60) return { level: 'Medium', color: '🟡', textColor: T.amber || '#f59e0b' };
     return { level: 'High', color: '🔴', textColor: T.rose || '#ef4444' };
+  };
+
+  const handleScanClick = () => {
+    if (fileInputRef.current) fileInputRef.current.click();
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file (JPEG/PNG).');
+      return;
+    }
+
+    setScanning(true);
+    try {
+      // Convert to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64Data = reader.result;
+
+        // Call backend scan API via profileAPI
+        const response = await profileAPI.scan(base64Data);
+
+        if (response.data.success && response.data.extracted) {
+          const items = response.data.extracted;
+          // Add extracted items to assets
+          for (const item of items) {
+            await addScannedAsset(item);
+          }
+          alert(`Successfully scanned ${items.length} items!`);
+          loadAssets();
+        } else {
+          alert('AI could not extract data. Please try a clearer image.');
+        }
+        setScanning(false);
+      };
+    } catch (err) {
+      console.error('Scan error:', err);
+      alert('Failed to process document.');
+      setScanning(false);
+    }
+  };
+
+  const addScannedAsset = async (item) => {
+    const { label, value, type } = item;
+    
+    // Determine the key based on label if possible, or use default
+    let assetKey = '';
+    const options = type === 'physical' ? physicalAssetOptions : type === 'liquid' ? liquidAssetOptions : liabilityOptions;
+    const match = options.find(o => label.toLowerCase().includes(o.label.toLowerCase()));
+    assetKey = match ? match.id : type === 'physical' ? 'otherPhysical' : type === 'liquid' ? 'otherLiquid' : 'otherLiabilities';
+
+    try {
+      // Get current assets for this category
+      const response = await profileAPI.getAssets();
+      const currentAssets = response.assets || { physicalAssets: {}, liquidAssets: {}, liabilities: {} };
+      
+      const category = type === 'physical' ? 'physicalAssets' : type === 'liquid' ? 'liquidAssets' : 'liabilities';
+      
+      const updatedCategory = { 
+        ...currentAssets[category], 
+        [assetKey]: (currentAssets[category][assetKey] || 0) + Number(value)
+      };
+
+      await profileAPI.updateAssets({
+        ...currentAssets,
+        [category]: updatedCategory
+      });
+    } catch (err) {
+      console.error('Error adding scanned asset:', err);
+    }
   };
 
   const getEMILevel = () => {
@@ -703,26 +782,57 @@ export default function Profile({ profile, setProfile, onUpdate }) {
             </div>
             
             {/* Add Asset Button */}
-            <button
-              onClick={() => setShowAssetModal(true)}
-              style={{
-                width: "100%",
-                padding: "12px",
-                borderRadius: 10,
-                border: `2px dashed ${T.blue || '#3b82f6'}`,
-                background: "transparent",
-                color: T.blue || '#3b82f6',
-                fontWeight: 600,
-                cursor: "pointer",
-                marginBottom: 20,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8
-              }}
-            >
-              ➕ Add New Asset/Liability
-            </button>
+            <div style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+              <button
+                onClick={() => setShowAssetModal(true)}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: 10,
+                  border: `2px dashed ${T.blue || '#3b82f6'}`,
+                  background: "transparent",
+                  color: T.blue || '#3b82f6',
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8
+                }}
+              >
+                ➕ Add New
+              </button>
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                style={{ display: 'none' }}
+                accept="image/*"
+              />
+
+              <button
+                onClick={handleScanClick}
+                disabled={scanning}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  borderRadius: 10,
+                  border: "none",
+                  background: scanning ? T.bg : `linear-gradient(135deg, ${T.violet || '#8b5cf6'}, ${T.blue || '#3b82f6'})`,
+                  color: scanning ? T.textMuted : "#fff",
+                  fontWeight: 600,
+                  cursor: scanning ? "wait" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                  boxShadow: '0 4px 12px rgba(139, 92, 246, 0.2)'
+                }}
+              >
+                {scanning ? '⌛ Scanning...' : '✨ Scan Statement'}
+              </button>
+            </div>
 
             {/* Physical Assets */}
             {assets.physicalAssets.length > 0 && (
