@@ -29,18 +29,22 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes
-app.use('/api/auth',        authRoutes);
-app.use('/api/profile',     profileRoutes);
-app.use('/api/goals',       goalsRoutes);
-app.use('/api/loans',       loansRoutes);
-app.use('/api/chat',        chatRoutes);
-app.use('/api/predictions', predictionsRoutes);
+// Check for required environment variables
+const REQUIRED_ENV = ['MONGODB_URI', 'JWT_SECRET'];
+REQUIRED_ENV.forEach(key => {
+  if (!process.env[key]) {
+    console.warn(`[WARNING] Missing environment variable: ${key}`);
+  }
+});
 
 // Database connection helper (Singleton)
 let isConnected = false;
 const connectDB = async () => {
   if (isConnected) return;
+  if (!process.env.MONGODB_URI) {
+    console.error('❌ MONGODB_URI is not defined in environment variables');
+    return;
+  }
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
@@ -52,7 +56,7 @@ const connectDB = async () => {
   }
 };
 
-// Middleware to ensure DB connection
+// Middleware to ensure DB connection BEFORE routes
 app.use(async (req, res, next) => {
   await connectDB();
   next();
@@ -66,6 +70,14 @@ app.get('/api/health', (req, res) => {
     dbConnected: mongoose.connection.readyState === 1
   });
 });
+
+// Routes
+app.use('/api/auth',        authRoutes);
+app.use('/api/profile',     profileRoutes);
+app.use('/api/goals',       goalsRoutes);
+app.use('/api/loans',       loansRoutes);
+app.use('/api/chat',        chatRoutes);
+app.use('/api/predictions', predictionsRoutes);
 
 // Global error handler
 app.use((err, req, res, next) => {
