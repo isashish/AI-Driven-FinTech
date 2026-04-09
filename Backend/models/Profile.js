@@ -32,6 +32,8 @@ const profileSchema = new mongoose.Schema({
   // Personal Info
   age: { type: Number, default: null },
   occupation: { type: String, default: '' },
+  phone: { type: String, default: '' },
+  location: { type: String, default: '' },
   
   // Risk profile & settings
   riskTolerance: {

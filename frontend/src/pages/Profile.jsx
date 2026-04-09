@@ -1,300 +1,3 @@
-// import React, { useState } from 'react';
-// import { useTheme } from '../context/ThemeContext.jsx';
-// import { Card, Input, ScoreRing, Badge, ImgBanner } from '../components/UI.jsx';
-// import { calcHealth, fmtK, IMGS } from '../utils.jsx';
-// import { profileAPI } from '../api';
-
-// export default function Profile({ profile, setProfile, onUpdate }) {
-//   const { T } = useTheme();
-
-//   /* -------------------------
-//      PERSONAL INFO STATES
-//   ------------------------- */
-//   const [savingInfo, setSavingInfo] = useState(false);
-//   const [infoLocked, setInfoLocked] = useState(false);
-
-//   /* -------------------------
-//      FINANCIAL SAVE STATES
-//   ------------------------- */
-//   const [saving, setSaving] = useState(false);
-//   const [saved, setSaved] = useState(false);
-
-//   /* -------------------------
-//      CALCULATIONS
-//   ------------------------- */
-//   const score   = calcHealth(profile);
-//   const surplus = Math.max(0, profile.income - profile.expenses - profile.emi);
-
-//   /* -------------------------
-//      UPDATE FUNCTION
-//   ------------------------- */
-//   const update = key => val =>
-//     setProfile(prev => ({
-//       ...prev,
-//       [key]: typeof val === "string" && !isNaN(val) && val.trim() !== "" ? Number(val) : val
-//     }));
-
-//   /* -------------------------
-//      SAVE PERSONAL INFO
-//   ------------------------- */
-//   const handlePersonalSave = async () => {
-//     setSavingInfo(true);
-//     try {
-//       await profileAPI.update({
-//         name: profile.name,
-//         email: profile.email,
-//         age: profile.age,
-//         occupation: profile.occupation
-//       });
-//       await onUpdate(); // Refresh the whole profile from DB
-//       setInfoLocked(true);
-//     } catch (err) {
-//       console.error('Failed to update personal info:', err);
-//     } finally {
-//       setSavingInfo(false);
-//     }
-//   };
-
-//   const handleEditInfo = () => {
-//     setInfoLocked(false);
-//   };
-
-//   /* -------------------------
-//      SAVE FINANCIAL PROFILE
-//   ------------------------- */
-//   const saveProfile = async () => {
-//     setSaving(true);
-//     try {
-//       await profileAPI.update({
-//         income: profile.income,
-//         expenses: profile.expenses,
-//         emi: profile.emi,
-//         savings: profile.savings,
-//         investments: profile.investments,
-//         emergency: profile.emergency
-//       });
-//       await onUpdate(); // Refresh parent
-//       setSaved(true);
-//       setTimeout(() => setSaved(false), 2000);
-//     } catch (err) {
-//       console.error('Failed to update financial profile:', err);
-//     } finally {
-//       setSaving(false);
-//     }
-//   };
-
-//   /* -------------------------
-//      STYLES
-//   ------------------------- */
-//   const labelStyle = {
-//     display: "block",
-//     fontSize: 12,
-//     color: T.textMuted,
-//     marginBottom: 6,
-//     fontWeight: 600
-//   };
-
-//   const inputStyle = {
-//     width: "100%",
-//     padding: "11px 14px",
-//     borderRadius: 10,
-//     border: `1.5px solid ${T.border}`,
-//     background: T.inputBg,
-//     color: T.text,
-//     fontSize: 14,
-//     outline: "none"
-//   };
-
-//   /* -------------------------
-//      PRIORITIES
-//   ------------------------- */
-//   const priorities = [
-//     { label: 'Emergency Fund',   need: profile.expenses * 6,       priority: 'High',   color: T.rose,  icon: '🛡️' },
-//     { label: 'Health Insurance', need: profile.income * 0.04,      priority: 'High',   color: T.rose,  icon: '❤️' },
-//     { label: 'EMI / Debt Repay', need: profile.emi,                priority: 'High',   color: T.amber, icon: '💳' },
-//     { label: 'Mutual Funds/SIP', need: surplus * 0.5,              priority: 'Medium', color: T.amber, icon: '📊' },
-//     { label: 'Home Loan',        need: surplus * 0.3,              priority: 'Medium', color: T.blue,  icon: '🏠' },
-//     { label: 'Lifestyle Goals',  need: surplus * 0.2,              priority: 'Low',    color: T.teal,  icon: '✨' },
-//   ];
-
-//   return (
-//     <div className="pf-page">
-
-//       <ImgBanner
-//         src={IMGS.profile}
-//         title="Financial Profile"
-//         subtitle="Build your Digital Financial Identity"
-//         color={T.blue}
-//       />
-
-//       <div className="pf-grid">
-
-//         {/* LEFT COLUMN */}
-//         <div className="pf-left">
-
-//           {/* PERSONAL INFORMATION */}
-//           <Card style={{ marginBottom: 20 }}>
-//             <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 18 }}>
-//               👤 Personal Information
-//             </div>
-
-//             <div style={{ display: 'grid', gap: 16 }}>
-//               {[
-//                 { label: "Full Name", key: "name", type: "text" },
-//                 { label: "Email Address", key: "email", type: "email" },
-//                 { label: "Age", key: "age", type: "number" },
-//                 { label: "Occupation", key: "occupation", type: "text" }
-//               ].map(field => (
-//                 <div key={field.key}>
-//                   <label style={labelStyle}>{field.label}</label>
-//                   <input
-//                     type={field.type}
-//                     value={profile[field.key] || ""}
-//                     disabled={infoLocked}
-//                     onChange={e => update(field.key)(e.target.value)}
-//                     style={{
-//                       ...inputStyle,
-//                       opacity: infoLocked ? 0.7 : 1,
-//                       cursor: infoLocked ? "not-allowed" : "text"
-//                     }}
-//                   />
-//                 </div>
-//               ))}
-//             </div>
-
-//             <div style={{ marginTop: 20 }}>
-//               {!infoLocked ? (
-//                 <button
-//                   onClick={handlePersonalSave}
-//                   disabled={savingInfo}
-//                   style={{
-//                     width: "100%",
-//                     padding: "12px 0",
-//                     borderRadius: 12,
-//                     border: "none",
-//                     cursor: "pointer",
-//                     fontWeight: 700,
-//                     color: "#fff",
-//                     background: `linear-gradient(135deg, ${T.teal}, ${T.blue})`
-//                   }}
-//                 >
-//                   {savingInfo ? "Saving..." : "💾 Update Personal Info"}
-//                 </button>
-//               ) : (
-//                 <button
-//                   onClick={handleEditInfo}
-//                   style={{
-//                     width: "100%",
-//                     padding: "12px 0",
-//                     borderRadius: 12,
-//                     border: `1px solid ${T.blue}`,
-//                     background: "transparent",
-//                     color: T.blue,
-//                     fontWeight: 700,
-//                     cursor: "pointer"
-//                   }}
-//                 >
-//                   ✏️ Edit Information
-//                 </button>
-//               )}
-//             </div>
-//           </Card>
-
-//           {/* SCORE CARD */}
-//           <Card style={{ textAlign: 'center', padding: 28 }}>
-//             <ScoreRing score={score} />
-//             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 18 }}>
-//               {[
-//                 { l: 'Savings Rate',   v: profile.income ? `${Math.round(profile.savings / profile.income * 100)}%` : '0%', c: T.teal },
-//                 { l: 'DTI Ratio',      v: profile.income ? `${Math.round(profile.emi / profile.income * 100)}%` : '0%', c: T.rose },
-//                 { l: 'Monthly Surplus',v: fmtK(surplus), c: T.blue },
-//                 { l: 'Invest Rate',    v: profile.income ? `${Math.round(profile.investments / profile.income * 100)}%` : '0%', c: T.violet },
-//               ].map(({ l, v, c }) => (
-//                 <div key={l} style={{ background: T.bg, borderRadius: 12, padding: 12, border: `1px solid ${T.border}` }}>
-//                   <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 4, fontWeight: 600 }}>{l}</div>
-//                   <div style={{ color: c, fontWeight: 800, fontSize: 18, fontFamily: "'JetBrains Mono',monospace" }}>{v}</div>
-//                 </div>
-//               ))}
-//             </div>
-//           </Card>
-
-//         </div>
-
-
-//         {/* RIGHT COLUMN */}
-//         <div className="pf-right">
-
-//           {/* FINANCIAL BREAKDOWN */}
-//           <Card>
-//             <div className="pf-form-title">🏦 Financial Breakdown</div>
-
-//             <Input label="Monthly Income (₹)" value={profile.income} onChange={update('income')} />
-//             <Input label="Monthly Expenses (₹)" value={profile.expenses} onChange={update('expenses')} />
-//             <Input label="Monthly EMI / Loans (₹)" value={profile.emi} onChange={update('emi')} />
-//             <Input label="Monthly Savings (₹)" value={profile.savings} onChange={update('savings')} />
-//             <Input label="Monthly Investments (₹)" value={profile.investments} onChange={update('investments')} />
-//             <Input label="Emergency Fund Total (₹)" value={profile.emergency} onChange={update('emergency')} />
-
-//             <button
-//               onClick={saveProfile}
-//               disabled={saving}
-//               style={{
-//                 width: '100%',
-//                 background: `linear-gradient(135deg,${T.teal},${T.blue})`,
-//                 color: '#fff',
-//                 border: 'none',
-//                 borderRadius: 12,
-//                 padding: '13px 0',
-//                 fontWeight: 800,
-//                 marginTop: 12,
-//                 cursor: 'pointer'
-//               }}
-//             >
-//               {saving ? 'Saving...' : saved ? '✅ Saved!' : '💾 Save Profile'}
-//             </button>
-//           </Card>
-
-//           {/* PRIORITY */}
-//           <Card>
-//             <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 14 }}>
-//               📋 Priority Hierarchy
-//             </div>
-
-//             {priorities.map(p => (
-//               <div key={p.label}
-//                 style={{
-//                   display: 'flex',
-//                   justifyContent: 'space-between',
-//                   alignItems: 'center',
-//                   padding: '10px 14px',
-//                   background: T.bg,
-//                   borderRadius: 10,
-//                   border: `1px solid ${T.border}`,
-//                   marginBottom: 8
-//                 }}>
-//                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-//                   <span style={{ fontSize: 18 }}>{p.icon}</span>
-//                   <div>
-//                     <div style={{ fontSize: 13, fontWeight: 600 }}>{p.label}</div>
-//                     <div style={{ fontSize: 11, color: T.textMuted }}>
-//                       {fmtK(Math.round(p.need))}/mo
-//                     </div>
-//                   </div>
-//                 </div>
-//                 <Badge color={p.color}>{p.priority}</Badge>
-//               </div>
-//             ))}
-//           </Card>
-
-//         </div>
-
-//       </div>
-//     </div>
-//   );
-// }
-
-
-
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Input, ScoreRing, Badge, ImgBanner } from '../components/UI.jsx';
@@ -701,7 +404,9 @@ export default function Profile({ profile, setProfile, onUpdate }) {
         name: profile.name,
         email: profile.email,
         age: profile.age,
-        occupation: profile.occupation
+        occupation: profile.occupation,
+        phone: profile.phone,
+        location: profile.location
       });
       await onUpdate();
       setInfoLocked(true);
@@ -800,76 +505,144 @@ export default function Profile({ profile, setProfile, onUpdate }) {
       />
 
       <div className="pf-grid">
-
-        {/* LEFT COLUMN */}
         <div className="pf-left">
-
           {/* PERSONAL INFORMATION */}
-          <Card style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 18 }}>
-              👤 Personal Information
+        <Card>
+          <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 18 }}>
+            👤 Personal Information
+          </div>
+
+          <div style={{ display: 'grid', gap: 16 }}>
+            {[
+              { label: "Full Name", key: "name", type: "text", required: true },
+              { label: "Email Address", key: "email", type: "email", required: true },
+              { label: "Age", key: "age", type: "number", required: true },
+              { label: "Occupation", key: "occupation", type: "text", required: true },
+              { label: "Phone Number", key: "phone", type: "number", required: false },
+              { label: "Location/City", key: "location", type: "text", required: false }
+            ].map(field => (
+              <div key={field.key}>
+                <label style={labelStyle}>
+                  {field.label} {field.required && <span style={{ color: T.rose || '#ef4444' }}>*</span>}
+                </label>
+                <input
+                  type={field.type === 'number' ? 'text' : field.type}
+                  inputMode={field.type === 'number' ? 'numeric' : undefined}
+                  value={profile[field.key] || ""}
+                  disabled={infoLocked}
+                  onChange={e => update(field.key)(e.target.value)}
+                  style={inputStyle(false, false)}
+                  required={field.required}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: 20 }}>
+            {!infoLocked ? (
+              <button
+                onClick={handlePersonalSave}
+                disabled={savingInfo}
+                style={{
+                  width: "100%",
+                  padding: "12px 0",
+                  borderRadius: 12,
+                  border: "none",
+                  cursor: "pointer",
+                  fontWeight: 700,
+                  color: "#fff",
+                  background: `linear-gradient(135deg, ${T.teal || '#14b8a6'}, ${T.blue || '#3b82f6'})`
+                }}
+              >
+                {savingInfo ? "Saving..." : "💾 Update Personal Info"}
+              </button>
+            ) : (
+              <button
+                onClick={handleEditInfo}
+                style={{
+                  width: "100%",
+                  padding: "12px 0",
+                  borderRadius: 12,
+                  border: `1px solid ${T.blue || '#3b82f6'}`,
+                  background: "transparent",
+                  color: T.blue || '#3b82f6',
+                  fontWeight: 700,
+                  cursor: "pointer"
+                }}
+              >
+                ✏️ Edit Information
+              </button>
+            )}
+          </div>
+        </Card>
+
+          {/* FINANCIAL BREAKDOWN */}
+          <Card>
+            <div className="pf-form-title">🏦 Financial Breakdown</div>
+
+            {Object.entries(financialFields).map(([key, field]) => (
+              <div key={key}>
+                <label style={labelStyle}>
+                  {key === 'income' ? 'Monthly Income' : 
+                   key === 'expenses' ? 'Monthly Expenses' :
+                   key === 'emi' ? 'Monthly EMI' :
+                   key === 'investments' ? 'Monthly Investments' :
+                   'Emergency Fund Total'} (₹)
+                  {field.required && <span style={{ color: T.rose || '#ef4444' }}>*</span>}
+                </label>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={field.value}
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    update(key)(val);
+                  }}
+                  style={inputStyle(validationErrors[key], warningMessages[key])}
+                  required={field.required}
+                />
+                {validationErrors[key] && (
+                  <div style={{ color: T.rose || '#ef4444', fontSize: 11, marginTop: 4 }}>{validationErrors[key]}</div>
+                )}
+                {warningMessages[key] && !validationErrors[key] && (
+                  <div style={{ color: T.amber || '#f59e0b', fontSize: 11, marginTop: 4 }}>{warningMessages[key]}</div>
+                )}
+              </div>
+            ))}
+
+            <div>
+              <label style={labelStyle}>
+                Monthly Savings (₹) <span style={{ color: T.green || '#10b981' }}>(Auto-calculated)</span>
+              </label>
+              <input
+                type="text"
+                inputMode="numeric"
+                value={calculatedSavings}
+                style={inputStyle(false, false)}
+                disabled
+              />
+              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>
+                💡 Savings = Income - Expenses - EMI
+              </div>
             </div>
 
-            <div style={{ display: 'grid', gap: 16 }}>
-              {[
-                { label: "Full Name", key: "name", type: "text", required: true },
-                { label: "Email Address", key: "email", type: "email", required: true },
-                { label: "Age", key: "age", type: "number", required: true },
-                { label: "Occupation", key: "occupation", type: "text", required: true }
-              ].map(field => (
-                <div key={field.key}>
-                  <label style={labelStyle}>
-                    {field.label} {field.required && <span style={{ color: T.rose || '#ef4444' }}>*</span>}
-                  </label>
-                  <input
-                    type={field.type === 'number' ? 'text' : field.type}
-                    inputMode={field.type === 'number' ? 'numeric' : undefined}
-                    value={profile[field.key] || ""}
-                    disabled={infoLocked}
-                    onChange={e => update(field.key)(e.target.value)}
-                    style={inputStyle(false, false)}
-                    required={field.required}
-                  />
-                </div>
-              ))}
-            </div>
-
-            <div style={{ marginTop: 20 }}>
-              {!infoLocked ? (
-                <button
-                  onClick={handlePersonalSave}
-                  disabled={savingInfo}
-                  style={{
-                    width: "100%",
-                    padding: "12px 0",
-                    borderRadius: 12,
-                    border: "none",
-                    cursor: "pointer",
-                    fontWeight: 700,
-                    color: "#fff",
-                    background: `linear-gradient(135deg, ${T.teal || '#14b8a6'}, ${T.blue || '#3b82f6'})`
-                  }}
-                >
-                  {savingInfo ? "Saving..." : "💾 Update Personal Info"}
-                </button>
-              ) : (
-                <button
-                  onClick={handleEditInfo}
-                  style={{
-                    width: "100%",
-                    padding: "12px 0",
-                    borderRadius: 12,
-                    border: `1px solid ${T.blue || '#3b82f6'}`,
-                    background: "transparent",
-                    color: T.blue || '#3b82f6',
-                    fontWeight: 700,
-                    cursor: "pointer"
-                  }}
-                >
-                  ✏️ Edit Information
-                </button>
-              )}
-            </div>
+            <button
+              onClick={saveProfile}
+              disabled={saving}
+              style={{
+                width: '100%',
+                background: `linear-gradient(135deg,${T.teal || '#14b8a6'},${T.blue || '#3b82f6'})`,
+                color: '#fff',
+                border: 'none',
+                borderRadius: 12,
+                padding: '13px 0',
+                fontWeight: 800,
+                marginTop: 12,
+                cursor: 'pointer'
+              }}
+            >
+              {saving ? 'Saving...' : saved ? '✅ Saved!' : '💾 Save Profile'}
+            </button>
           </Card>
 
           {/* SCORE CARD */}
@@ -881,7 +654,7 @@ export default function Profile({ profile, setProfile, onUpdate }) {
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: T.textMuted }}>
                 Financial Health Indicators
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+              <div className="pf-indicators-grid">
                 <div style={{ textAlign: 'center', padding: 8, background: T.bg, borderRadius: 8 }}>
                   <div style={{ fontSize: 20 }}>{expenditureLevel.color}</div>
                   <div style={{ fontSize: 11, fontWeight: 600, color: expenditureLevel.textColor }}>Expenses</div>
@@ -920,9 +693,11 @@ export default function Profile({ profile, setProfile, onUpdate }) {
               ))}
             </div>
           </Card>
+        </div>
 
+        <div className="pf-right">
           {/* ASSET CLASSIFICATION CARD */}
-          <Card style={{ marginTop: 20 }}>
+          <Card>
             <div style={{ fontSize: 16, fontWeight: 800, marginBottom: 18 }}>
               🏦 Asset Classification
             </div>
@@ -1088,79 +863,7 @@ export default function Profile({ profile, setProfile, onUpdate }) {
               </div>
             </div>
           </Card>
-        </div>
 
-        {/* RIGHT COLUMN */}
-        <div className="pf-right">
-
-          {/* FINANCIAL BREAKDOWN - Updated with similar style */}
-          <Card>
-            <div className="pf-form-title">🏦 Financial Breakdown</div>
-
-            {Object.entries(financialFields).map(([key, field]) => (
-              <div key={key}>
-                <label style={labelStyle}>
-                  {key === 'income' ? 'Monthly Income' : 
-                   key === 'expenses' ? 'Monthly Expenses' :
-                   key === 'emi' ? 'Monthly EMI' :
-                   key === 'investments' ? 'Monthly Investments' :
-                   'Emergency Fund Total'} (₹)
-                  {field.required && <span style={{ color: T.rose || '#ef4444' }}>*</span>}
-                </label>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={field.value}
-                  onChange={e => {
-                    const val = e.target.value.replace(/[^0-9]/g, '');
-                    update(key)(val);
-                  }}
-                  style={inputStyle(validationErrors[key], warningMessages[key])}
-                  required={field.required}
-                />
-                {validationErrors[key] && (
-                  <div style={{ color: T.rose || '#ef4444', fontSize: 11, marginTop: 4 }}>{validationErrors[key]}</div>
-                )}
-                {warningMessages[key] && !validationErrors[key] && (
-                  <div style={{ color: T.amber || '#f59e0b', fontSize: 11, marginTop: 4 }}>{warningMessages[key]}</div>
-                )}
-              </div>
-            ))}
-
-            <div>
-              <label style={labelStyle}>
-                Monthly Savings (₹) <span style={{ color: T.green || '#10b981' }}>(Auto-calculated)</span>
-              </label>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={calculatedSavings}
-                style={inputStyle(false, false)}
-                disabled
-              />
-              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>
-                💡 Savings = Income - Expenses - EMI
-              </div>
-            </div>
-
-            <button
-              onClick={saveProfile}
-              disabled={saving}
-              style={{
-                width: '100%',
-                background: `linear-gradient(135deg,${T.teal || '#14b8a6'},${T.blue || '#3b82f6'})`,
-                color: '#fff',
-                border: 'none',
-                borderRadius: 12,
-                padding: '13px 0',
-                fontWeight: 800,
-                marginTop: 12,
-                cursor: 'pointer'
-              }}
-            >
-              {saving ? 'Saving...' : saved ? '✅ Saved!' : '💾 Save Profile'}
-            </button>
-          </Card>
 
           {/* PRIORITY HIERARCHY CARD - Sorted by priority */}
           <Card>
