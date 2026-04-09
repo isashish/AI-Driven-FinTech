@@ -14,7 +14,7 @@ export default function Dashboard({ profile, goals }) {
   const { T } = useTheme();
   const score      = calcHealth(profile);
   const surplus    = Math.max(0, profile.income - profile.expenses - profile.emi);
-  const savePct    = profile.income ? Math.round(profile.savings / profile.income * 100) : 0;
+  const savePct    = profile.income ? ((profile.savings / profile.income) * 100).toFixed(1) : '0.0';
   const scoreColor = score >= 75 ? T.teal : score >= 50 ? T.amber : T.rose;
 
   const expData = [

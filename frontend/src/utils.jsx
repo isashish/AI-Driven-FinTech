@@ -11,17 +11,19 @@ export function calcHealth(p) {
   if (!p || !p.income || p.income <= 0) return 0;
   
   const income = Number(p.income);
-  const savings = Number(p.savings) || 0;
   const emi = Number(p.emi) || 0;
   const investments = Number(p.investments) || 0;
   const emergency = Number(p.emergency) || 0;
   const expenses = Number(p.expenses) || 0;
 
-  const sr  = clamp(((savings / income) * 100) / 20, 0, 1) * 25;
+  // DERIVED SAVINGS: What's left after basics AND investments AND emergency contributions
+  // This matches the logic in Profile.jsx: income - expenses - emi - investments - emergency
+  const derivedSavings = Math.max(0, income - expenses - emi - investments - emergency);
+
+  const sr  = clamp(((derivedSavings / income) * 100) / 20, 0, 1) * 25;
   const dti = clamp(1 - (emi / income), 0, 1) * 25;
   const ir  = clamp(((investments / income) * 100) / 15, 0, 1) * 25;
   
-  // Handle 0 expenses to avoid division by zero (NaN)
   const efTarget = expenses * 6;
   const efScore = efTarget > 0 ? clamp(emergency / efTarget, 0, 1) * 25 : 25;
 
