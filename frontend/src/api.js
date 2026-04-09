@@ -37,19 +37,8 @@ export const profileAPI = {
 
 
 
-  updateAssets: async (assets) => {
-    const response = await fetch('/api/profile/assets', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(assets)
-    });
-    return response.json();
-  },
-
-  getAssets: async () => {
-    const response = await fetch('/api/profile/assets');
-    return response.json();
-  }
+  updateAssets: (assets) => api.put('/profile/assets', assets),
+  getAssets: () => api.get('/profile/assets')
 };
 
 export const goalsAPI = {

@@ -82,44 +82,47 @@ export default function Login({ onLogin, onGoSignup, onGoLanding, onGoForgot }) 
           </div>
         )}
 
-        <div className="auth-field">
-          <label style={{ color: T.textSub }}>Email address</label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={set('email')}
-            style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
-          />
-        </div>
-
-        <div className="auth-field">
-          <label style={{ color: T.textSub }}>Password</label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={form.password}
-            onChange={set('password')}
-            style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
-            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          />
-          <div 
-            className="auth-forgot" 
-            style={{ color: T.teal, cursor: 'pointer' }}
-            onClick={onGoForgot}
-          >
-            Forgot password?
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+          <div className="auth-field">
+            <label style={{ color: T.textSub }}>Email address</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={set('email')}
+              style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
+              required
+            />
           </div>
-        </div>
 
-        <button
-          className="auth-btn-primary auth-btn-full"
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, opacity: loading ? 0.7 : 1 }}
-        >
-          {loading ? '⏳ Signing in…' : 'Sign In →'}
-        </button>
+          <div className="auth-field">
+            <label style={{ color: T.textSub }}>Password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={set('password')}
+              style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
+              required
+            />
+            <div 
+              className="auth-forgot" 
+              style={{ color: T.teal, cursor: 'pointer' }}
+              onClick={onGoForgot}
+            >
+              Forgot password?
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="auth-btn-primary auth-btn-full"
+            disabled={loading}
+            style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? '⏳ Signing in…' : 'Sign In →'}
+          </button>
+        </form>
 
         <div className="auth-divider"><span style={{ background: T.surface, color: T.textMuted }}>or</span></div>
 

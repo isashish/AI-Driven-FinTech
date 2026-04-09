@@ -94,9 +94,11 @@ function AppInner() {
       setProfile(pRes.data.profile);
       setGoals(gRes.data.goals);
     } catch (err) {
-      console.error('Failed to fetch data:', err);
-      // If unauthorized, logout
-      if (err.response?.status === 401) handleLogout();
+      if (err.response?.status === 401) {
+        handleLogout();
+      } else {
+        console.error('Failed to fetch data:', err);
+      }
     }
   };
 

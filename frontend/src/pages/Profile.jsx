@@ -378,7 +378,26 @@ export default function Profile({ profile, setProfile, onUpdate }) {
     try {
       const response = await profileAPI.getAssets();
       if (response.assets) {
-        setAssets(response.assets);
+        const backendAssets = response.assets;
+        
+        // Convert object structure from backend to array structure for frontend
+        const convert = (obj, options) => {
+          return Object.entries(obj || {}).map(([id, value]) => {
+            const opt = options.find(o => o.id === id);
+            return {
+              id,
+              label: opt?.label || id,
+              icon: opt?.icon || '📌',
+              value: value || 0
+            };
+          }).filter(a => a.value > 0);
+        };
+
+        setAssets({
+          physicalAssets: convert(backendAssets.physicalAssets, physicalAssetOptions),
+          liquidAssets: convert(backendAssets.liquidAssets, liquidAssetOptions),
+          liabilities: convert(backendAssets.liabilities, liabilityOptions)
+        });
       }
     } catch (err) {
       console.error('Failed to load assets:', err);
@@ -719,8 +738,21 @@ export default function Profile({ profile, setProfile, onUpdate }) {
         emergency: profile.emergency
       });
       
+      // Convert array structure from frontend to object structure for backend
+      const convertToObj = (arr) => {
+        const obj = {};
+        arr.forEach(a => { obj[a.id] = a.value; });
+        return obj;
+      };
+
+      const assetsToSave = {
+        physicalAssets: convertToObj(assets.physicalAssets),
+        liquidAssets: convertToObj(assets.liquidAssets),
+        liabilities: convertToObj(assets.liabilities)
+      };
+
       // Save assets to backend
-      await profileAPI.updateAssets(assets);
+      await profileAPI.updateAssets(assetsToSave);
       
       await onUpdate();
       setSaved(true);
@@ -790,7 +822,8 @@ export default function Profile({ profile, setProfile, onUpdate }) {
                     {field.label} {field.required && <span style={{ color: T.rose || '#ef4444' }}>*</span>}
                   </label>
                   <input
-                    type={field.type}
+                    type={field.type === 'number' ? 'text' : field.type}
+                    inputMode={field.type === 'number' ? 'numeric' : undefined}
                     value={profile[field.key] || ""}
                     disabled={infoLocked}
                     onChange={e => update(field.key)(e.target.value)}
@@ -1075,9 +1108,13 @@ export default function Profile({ profile, setProfile, onUpdate }) {
                   {field.required && <span style={{ color: T.rose || '#ef4444' }}>*</span>}
                 </label>
                 <input
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   value={field.value}
-                  onChange={e => update(key)(e.target.value)}
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^0-9]/g, '');
+                    update(key)(val);
+                  }}
                   style={inputStyle(validationErrors[key], warningMessages[key])}
                   required={field.required}
                 />
@@ -1095,7 +1132,8 @@ export default function Profile({ profile, setProfile, onUpdate }) {
                 Monthly Savings (₹) <span style={{ color: T.green || '#10b981' }}>(Auto-calculated)</span>
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={calculatedSavings}
                 style={inputStyle(false, false)}
                 disabled
@@ -1331,9 +1369,13 @@ export default function Profile({ profile, setProfile, onUpdate }) {
             <div style={{ marginBottom: 24 }}>
               <label style={labelStyle}>Value (₹)</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={assetValue}
-                onChange={(e) => setAssetValue(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value.replace(/[^0-9]/g, '');
+                  setAssetValue(val);
+                }}
                 placeholder="Enter amount"
                 style={inputStyle(false, false)}
               />

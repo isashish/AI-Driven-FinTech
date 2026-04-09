@@ -83,70 +83,75 @@ export default function Signup({ onSignup, onGoLogin, onGoLanding }) {
           </div>
         )}
 
-        <div className="auth-field">
-          <label style={{ color: T.textSub }}>Full name</label>
-          <input
-            type="text"
-            placeholder="Arjun Sharma"
-            value={form.name}
-            onChange={set('name')}
-            style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
-          />
-        </div>
+        <form onSubmit={(e) => { e.preventDefault(); handleSubmit(); }}>
+          <div className="auth-field">
+            <label style={{ color: T.textSub }}>Full name</label>
+            <input
+              type="text"
+              placeholder="Arjun Sharma"
+              value={form.name}
+              onChange={set('name')}
+              style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
+              required
+            />
+          </div>
 
-        <div className="auth-field">
-          <label style={{ color: T.textSub }}>Email address</label>
-          <input
-            type="email"
-            placeholder="you@example.com"
-            value={form.email}
-            onChange={set('email')}
-            style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
-          />
-        </div>
+          <div className="auth-field">
+            <label style={{ color: T.textSub }}>Email address</label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={form.email}
+              onChange={set('email')}
+              style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
+              required
+            />
+          </div>
 
-        <div className="auth-field">
-          <label style={{ color: T.textSub }}>Password</label>
-          <input
-            type="password"
-            placeholder="Min. 8 characters"
-            value={form.password}
-            onChange={set('password')}
-            style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
-          />
-          {form.password && (
-            <div className="auth-strength">
-              <div className="auth-strength-bars">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="auth-strength-bar"
-                    style={{ background: i <= strength ? strengthColor : T.border }} />
-                ))}
+          <div className="auth-field">
+            <label style={{ color: T.textSub }}>Password</label>
+            <input
+              type="password"
+              placeholder="Min. 8 characters"
+              value={form.password}
+              onChange={set('password')}
+              style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
+              required
+            />
+            {form.password && (
+              <div className="auth-strength">
+                <div className="auth-strength-bars">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="auth-strength-bar"
+                      style={{ background: i <= strength ? strengthColor : T.border }} />
+                  ))}
+                </div>
+                <span style={{ color: strengthColor, fontSize: 11, fontWeight: 700 }}>{strengthLabel}</span>
               </div>
-              <span style={{ color: strengthColor, fontSize: 11, fontWeight: 700 }}>{strengthLabel}</span>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        <div className="auth-field">
-          <label style={{ color: T.textSub }}>Confirm password</label>
-          <input
-            type="password"
-            placeholder="••••••••"
-            value={form.confirm}
-            onChange={set('confirm')}
-            style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
-            onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-          />
-        </div>
+          <div className="auth-field">
+            <label style={{ color: T.textSub }}>Confirm password</label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={form.confirm}
+              onChange={set('confirm')}
+              style={{ background: T.inputBg, border: `1.5px solid ${T.border}`, color: T.text }}
+              required
+            />
+          </div>
 
-        <button
-          className="auth-btn-primary auth-btn-full"
-          onClick={handleSubmit}
-          disabled={loading}
-          style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, opacity: loading ? 0.7 : 1 }}
-        >
-          {loading ? '⏳ Creating account…' : 'Create Account →'}
-        </button>
+          <button
+            type="submit"
+            className="auth-btn-primary auth-btn-full"
+            disabled={loading}
+            style={{ background: `linear-gradient(135deg,${T.teal},${T.blue})`, opacity: loading ? 0.7 : 1 }}
+          >
+            {loading ? '⏳ Creating account…' : 'Create Account →'}
+          </button>
+        </form>
 
         <p className="auth-terms" style={{ color: T.textMuted }}>
           By signing up you agree to our{' '}

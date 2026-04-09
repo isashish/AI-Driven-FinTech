@@ -83,3 +83,14 @@
 @media (max-width: 400px) {
   .pf-mini { grid-template-columns: 1fr; }
 }
+
+/* Hide number input spin buttons */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
