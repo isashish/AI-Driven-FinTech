@@ -19,16 +19,16 @@ router.get('/', async (req, res) => {
     if (!profile) {
       profile = await Profile.create({ userId: req.userId });
     }
-    
+
     const user = await User.findById(req.userId).select('name email');
-    
+
     // Merge user info with profile for the frontend
     const profileData = {
       ...profile.toObject(),
       name: user?.name,
       email: user?.email,
     };
-    
+
     res.json({ profile: profileData });
   } catch (err) {
     console.error('Get profile error:', err);
@@ -51,7 +51,7 @@ router.put('/', async (req, res) => {
 
     const allowedFields = [
       'income', 'expenses', 'emi', 'savings', 'investments', 'emergency',
-      'otherIncome', 'rent', 'utilities', 'groceries', 'transport', 
+      'otherIncome', 'rent', 'utilities', 'groceries', 'transport',
       'entertainment', 'otherExpenses', 'totalSavings', 'totalInvestments',
       'emergencyFundTarget', 'riskTolerance', 'age', 'occupation',
       'retirementAge', 'currency', 'phone', 'location',
@@ -86,21 +86,21 @@ router.put('/', async (req, res) => {
 router.put('/assets', async (req, res) => {
   try {
     const { physicalAssets, liquidAssets, liabilities } = req.body;
-    
+
     const profile = await Profile.findOneAndUpdate(
       { userId: req.userId },
-      { 
-        $set: { 
+      {
+        $set: {
           assets: {
             physicalAssets,
             liquidAssets,
             liabilities
           }
-        } 
+        }
       },
       { new: true, upsert: true }
     );
-    
+
     res.json({ success: true, assets: profile.assets });
   } catch (err) {
     console.error('Update assets error:', err);
@@ -117,7 +117,7 @@ router.get('/assets', async (req, res) => {
       liquidAssets: { cash: 0, bankBalance: 0, mutualFunds: 0, stocks: 0, otherLiquid: 0 },
       liabilities: { homeLoan: 0, carLoan: 0, personalLoan: 0, otherLiabilities: 0 }
     };
-    
+
     res.json({ assets });
   } catch (err) {
     console.error('Get assets error:', err);

@@ -133,7 +133,7 @@ router.post('/google', async (req, res) => {
     });
     const payload = ticket.getPayload();
     const { email, name, sub: googleId } = payload;
-    
+
     let user = await User.findOne({ email });
     if (!user) {
       user = await User.create({ name, email, googleId });
@@ -175,9 +175,9 @@ router.post('/forgotpassword', async (req, res) => {
     });
 
     const message = `You are receiving this email because you requested a password reset.\n\nPlease make a put request to: \n\n${resetUrl}`;
-    
+
     // In actual dev, if no SMTP creds, just log it out.
-    if(!process.env.SMTP_EMAIL) {
+    if (!process.env.SMTP_EMAIL) {
       console.log('RESET URL (SMTP not configured):', resetUrl);
       return res.status(200).json({ message: 'SMTP not configured. Token logged to server console.' });
     }
@@ -192,9 +192,9 @@ router.post('/forgotpassword', async (req, res) => {
     res.status(200).json({ message: 'Email sent' });
   } catch (err) {
     console.error(err);
-    if(req.body.email) {
+    if (req.body.email) {
       const user = await User.findOne({ email: req.body.email });
-      if(user) {
+      if (user) {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save();

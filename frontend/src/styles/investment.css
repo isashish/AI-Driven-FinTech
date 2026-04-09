@@ -40,3 +40,17 @@
 @media (max-width: 400px) {
   .inv-mini { grid-template-columns: 1fr; }
 }
+
+/* AI Insights */
+.inv-ai-insights { margin-top: 10px; display: flex; flex-direction: column; gap: 12px; }
+.inv-ai-title { font-weight: 800; font-size: 15px; display: flex; alignItems: center; gap: 8px; margin-bottom: 2px; }
+.inv-ai-risk-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.inv-ai-risk-badge { padding: 4px 10px; border-radius: 20px; font-weight: 700; font-size: 11px; }
+.inv-ai-suggestion-list { display: flex; flex-direction: column; gap: 10px; padding: 0; list-style: none; margin: 0; }
+.inv-ai-suggestion-item { padding: 12px; border-radius: 12px; font-size: 12px; line-height: 1.5; display: flex; gap: 10px; transition: all 0.2s; }
+.inv-ai-suggestion-item:hover { transform: translateX(4px); }
+.inv-ai-suggestion-bullet { font-size: 14px; margin-top: -1px; }
+
+.inv-ai-loading { text-align: center; padding: 20px 0; color: rgba(255,255,255,0.6); }
+.inv-ai-btn { width: 100%; padding: 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.inv-ai-btn:hover { opacity: 0.9; transform: translateY(-1px); }

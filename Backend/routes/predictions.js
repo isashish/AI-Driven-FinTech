@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const { body, validationResult } = require('express-validator');
 const Prediction = require('../models/Prediction');
 const auth = require('../middleware/auth');
@@ -145,6 +146,54 @@ router.delete('/:id', async (req, res) => {
     res.json({ message: 'Prediction deleted.' });
   } catch (err) {
     res.status(500).json({ message: 'Server error.' });
+  }
+});
+
+// ─── POST /api/predictions/ai-invest ──────────────────────────────────────
+// Advanced AI growth + risk prediction
+router.post('/ai-invest', async (req, res) => {
+  const { initial_investment, monthly_sip, annual_return, years } = req.body;
+  try {
+    const workerUrl = process.env.AI_WORKER_URL || 'http://localhost:8000';
+    const [growthRes, riskRes] = await Promise.all([
+      axios.post(`${workerUrl}/predict-growth`, { initial_investment, monthly_sip, annual_return, years }),
+      axios.post(`${workerUrl}/risk-estimation`, { initial_investment, monthly_sip, annual_return, years })
+    ]);
+
+    res.json({
+      success: true,
+      growth: growthRes.data.data,
+      risk: riskRes.data
+    });
+  } catch (err) {
+    console.error('AI Invest error:', err.message);
+    res.status(500).json({ message: 'AI Worker is currently offline. Please try again later.' });
+  }
+});
+
+// ─── POST /api/predictions/ai-suggestions ──────────────────────────────────
+// Personalized suggestions via Gemini
+router.post('/ai-suggestions', async (req, res) => {
+  const { initial_investment, monthly_sip, annual_return, years } = req.body;
+  try {
+    const workerUrl = process.env.AI_WORKER_URL || 'http://localhost:8000';
+    const response = await axios.post(`${workerUrl}/ai-suggestions`, { initial_investment, monthly_sip, annual_return, years });
+    
+    // Parse the string if it's JSON from Gemini
+    let suggestions = response.data.suggestions;
+    if (typeof suggestions === 'string') {
+      try {
+        suggestions = JSON.parse(suggestions);
+      } catch (e) {
+        // Fallback to text split if not JSON
+        suggestions = [suggestions];
+      }
+    }
+
+    res.json({ success: true, suggestions });
+  } catch (err) {
+    console.error('AI Suggestions error:', err.message);
+    res.status(500).json({ message: 'Failed to get AI suggestions.' });
   }
 });
 

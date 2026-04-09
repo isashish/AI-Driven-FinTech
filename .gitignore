@@ -38,3 +38,16 @@
 **/temp/
 **/.vercel/
 **/.turbo/
+
+# Python Specific
+**/__pycache__/
+**/.venv/
+**/venv/
+**/env/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.pytest_cache/
+**/.mypy_cache/
+**/.coverage
+**/htmlcov/

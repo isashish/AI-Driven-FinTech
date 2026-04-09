@@ -55,4 +55,9 @@ export const chatAPI = {
   clearHistory: () => api.delete('/chat/history'),
 };
 
+export const predictionsAPI = {
+  getAIInvest: (data) => api.post('/predictions/ai-invest', data),
+  getAISuggestions: (data) => api.post('/predictions/ai-suggestions', data),
+};
+
 export default api;
