@@ -3,6 +3,8 @@ import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Input, ScoreRing, Badge, ImgBanner } from '../components/UI.jsx';
 import { calcHealth, fmtK, IMGS } from '../utils.jsx';
 import { profileAPI } from '../api';
+import '../styles/profile.css';
+
 
 export default function Profile({ profile, setProfile, onUpdate }) {
   const { T } = useTheme();
@@ -84,8 +86,8 @@ export default function Profile({ profile, setProfile, onUpdate }) {
   const loadAssets = async () => {
     try {
       const response = await profileAPI.getAssets();
-      if (response.assets) {
-        const backendAssets = response.assets;
+      if (response.data && response.data.assets) {
+        const backendAssets = response.data.assets;
         
         // Convert object structure from backend to array structure for frontend
         const convert = (obj, options) => {
@@ -209,7 +211,7 @@ export default function Profile({ profile, setProfile, onUpdate }) {
     try {
       // Get current assets for this category
       const response = await profileAPI.getAssets();
-      const currentAssets = response.assets || { physicalAssets: {}, liquidAssets: {}, liabilities: {} };
+      const currentAssets = response.data.assets || { physicalAssets: {}, liquidAssets: {}, liabilities: {} };
       
       const category = type === 'physical' ? 'physicalAssets' : type === 'liquid' ? 'liquidAssets' : 'liabilities';
       

@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import '../styles/whatif.css';
+
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, StatCard, RangeInput, ImgBanner, ChartTooltip } from '../components/UI.jsx';

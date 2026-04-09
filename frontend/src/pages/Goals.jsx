@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import '../styles/goals.css';
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Input, Badge, ImgBanner, ChartTooltip } from '../components/UI.jsx';

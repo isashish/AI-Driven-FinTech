@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import '../styles/chatbot.css';
+
 import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, Badge, ImgBanner } from '../components/UI.jsx';
 import { calcHealth, fmtK, IMGS } from '../utils.jsx';

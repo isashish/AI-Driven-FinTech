@@ -102,10 +102,11 @@ function AppInner() {
     }
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (defaultPage = 'dashboard') => {
     setLoading(true);
     await fetchData();
     setScreen('app');
+    setPage(defaultPage);
     window.history.pushState({}, '', '/'); // Reset url path 
     setLoading(false);
   };
@@ -136,12 +137,12 @@ function AppInner() {
 
   if (screen === 'login') return (
     <><style>{globalStyle}</style>
-    <Login onLogin={handleLogin} onGoSignup={() => setScreen('signup')} onGoLanding={() => setScreen('landing')} onGoForgot={() => setScreen('forgotpassword')} /></>
+    <Login onLogin={() => handleLogin('dashboard')} onGoSignup={() => setScreen('signup')} onGoLanding={() => setScreen('landing')} onGoForgot={() => setScreen('forgotpassword')} /></>
   );
 
   if (screen === 'signup') return (
     <><style>{globalStyle}</style>
-    <Signup onSignup={handleLogin} onGoLogin={() => setScreen('login')} onGoLanding={() => setScreen('landing')} /></>
+    <Signup onSignup={() => handleLogin('profile')} onGoLogin={() => setScreen('login')} onGoLanding={() => setScreen('landing')} /></>
   );
 
   if (screen === 'forgotpassword') return (
@@ -172,7 +173,7 @@ function AppInner() {
         ::-webkit-scrollbar-thumb { background: ${T.border}; }
         input[type=range] { background: ${T.border}; }
         select option { background: ${T.surface}; color: ${T.text}; }
-        .spinner { font-size: 20px; font-weight: 600; animate: pulse 1.5s infinite; }
+        .spinner { font-size: 20px; font-weight: 600; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
       `}</style>
      

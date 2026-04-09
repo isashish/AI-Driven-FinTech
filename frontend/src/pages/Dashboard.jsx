@@ -1,4 +1,6 @@
 import React from 'react';
+import '../styles/dashboard.css';
+
 
 import {
   AreaChart, Area, PieChart, Pie, Cell,
@@ -166,7 +168,7 @@ export default function Dashboard({ profile, goals }) {
               const pct = Math.min(100, Math.round(g.saved / g.target * 100));
               const c   = g.priority === 'High' ? T.rose : g.priority === 'Medium' ? T.amber : T.blue;
               return (
-                <div key={g.id} className="db-goal-card" style={{ background: T.bg, border: `1px solid ${T.border}` }}>
+                <div key={g._id || g.id} className="db-goal-card" style={{ background: T.bg, border: `1px solid ${T.border}` }}>
                   <div className="db-goal-card-header">
                     <span className="db-goal-name" style={{ color: T.text }}>{g.name}</span>
                     <Badge color={c}>{pct}%</Badge>

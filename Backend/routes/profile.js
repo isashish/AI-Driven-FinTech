@@ -192,7 +192,7 @@ router.post('/scan', async (req, res) => {
     `;
 
     // Clean base64 string
-    const base64Data = imageBase64.replace(/^data:image\\/\\w+;base64,/, '');
+    const base64Data = imageBase64.replace(/^data:image\/\w+;base64,/, '');
 
     const result = await model.generateContent([
       prompt,
