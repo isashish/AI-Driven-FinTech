@@ -8,6 +8,12 @@ const { calculateSIP, calculateLumpsum, calculateSIPForGoal } = require('../serv
 const router = express.Router();
 router.use(auth);
 
+// Helper to clean AI Worker URL (removes trailing slashes and spaces)
+const getWorkerUrl = () => {
+  let url = process.env.AI_WORKER_URL || 'http://localhost:8000';
+  return url.replace(/\/+$/, '').trim();
+};
+
 // ─── GET /api/predictions ─────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
@@ -154,7 +160,7 @@ router.delete('/:id', async (req, res) => {
 router.post('/ai-invest', async (req, res) => {
   const { initial_investment, monthly_sip, annual_return, years } = req.body;
   try {
-    const workerUrl = process.env.AI_WORKER_URL || 'http://localhost:8000';
+    const workerUrl = getWorkerUrl();
     const [growthRes, riskRes] = await Promise.all([
       axios.post(`${workerUrl}/predict-growth`, { initial_investment, monthly_sip, annual_return, years }),
       axios.post(`${workerUrl}/risk-estimation`, { initial_investment, monthly_sip, annual_return, years })
@@ -176,7 +182,7 @@ router.post('/ai-invest', async (req, res) => {
 router.post('/ai-suggestions', async (req, res) => {
   const { initial_investment, monthly_sip, annual_return, years } = req.body;
   try {
-    const workerUrl = process.env.AI_WORKER_URL || 'http://localhost:8000';
+    const workerUrl = getWorkerUrl();
     const response = await axios.post(`${workerUrl}/ai-suggestions`, { initial_investment, monthly_sip, annual_return, years });
     
     // Parse the string if it's JSON from Gemini
@@ -200,7 +206,7 @@ router.post('/ai-suggestions', async (req, res) => {
 // ─── GET /api/predictions/stock-risk/:symbol ──────────────────────────────
 router.get('/stock-risk/:symbol', async (req, res) => {
   try {
-    const workerUrl = process.env.AI_WORKER_URL || 'http://localhost:8000';
+    const workerUrl = getWorkerUrl();
     const response = await axios.get(`${workerUrl}/risk/${req.params.symbol.toUpperCase()}`);
     res.json(response.data);
   } catch (err) {
@@ -212,7 +218,7 @@ router.get('/stock-risk/:symbol', async (req, res) => {
 // ─── GET /api/predictions/stock-predict/:symbol ───────────────────────────
 router.get('/stock-predict/:symbol', async (req, res) => {
   try {
-    const workerUrl = process.env.AI_WORKER_URL || 'http://localhost:8000';
+    const workerUrl = getWorkerUrl();
     const response = await axios.get(`${workerUrl}/predict/${req.params.symbol.toUpperCase()}/7`);
     res.json(response.data);
   } catch (err) {
