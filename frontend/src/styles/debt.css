@@ -1,0 +1,112 @@
+/* =====================================================
+   Debt.css — All Debt page styles
+   ===================================================== */
+
+.dt-page { display: flex; flex-direction: column; gap: 20px; }
+
+/* Stat cards */
+.dt-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+/* Main layout */
+.dt-grid { display: grid; grid-template-columns: 310px 1fr; gap: 20px; }
+.dt-controls { display: flex; flex-direction: column; gap: 16px; }
+.dt-loans { display: flex; flex-direction: column; gap: 14px; }
+
+/* Strategy settings */
+.dt-strategy-title { font-weight: 800; font-size: 15px; margin-bottom: 16px; }
+.dt-strategy-btns { display: flex; gap: 10px; margin-bottom: 18px; }
+.dt-strategy-btn {
+  flex: 1;
+  padding: 11px 0;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+  border-width: 2px;
+  border-style: solid;
+}
+
+/* AI recommendation box */
+.dt-ai-box { border-radius: 14px; padding: 16px; }
+.dt-ai-label { font-size: 11px; font-weight: 800; margin-bottom: 8px; letter-spacing: 0.5px; }
+.dt-ai-text { font-weight: 700; font-size: 14px; }
+.dt-ai-sub { font-size: 12px; font-weight: 500; }
+
+/* Payoff chart */
+.dt-chart-title { font-weight: 800; font-size: 14px; margin-bottom: 14px; }
+
+/* Add loan button */
+.dt-add-loan-btn {
+  background: transparent;
+  border-radius: 14px;
+  padding: 14px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  border-width: 2px;
+  border-style: dashed;
+  width: 100%;
+}
+
+/* Repayment order header */
+.dt-order-label { font-weight: 700; font-size: 13px; padding: 0 4px; margin-bottom: 4px; }
+
+/* Loan card */
+.dt-loan-card-top {
+  position: absolute;
+  top: 16px; right: 16px;
+  display: flex; gap: 8px; align-items: center;
+}
+.dt-loan-priority-badge {
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 800;
+}
+.dt-loan-remove {
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-weight: 700;
+  font-family: inherit;
+}
+.dt-loan-name-input {
+  background: transparent;
+  border: none;
+  font-weight: 800;
+  font-size: 18px;
+  outline: none;
+  width: 55%;
+  font-family: inherit;
+  margin-bottom: 14px;
+  display: block;
+}
+.dt-loan-detail { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; }
+.dt-loan-detail-tile { border-radius: 10px; padding: 10px 8px; text-align: center; }
+.dt-loan-detail-label { font-size: 10px; font-weight: 600; margin-bottom: 4px; }
+.dt-loan-detail-value { font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.dt-loan-rate-row { margin-top: 12px; display: flex; gap: 10px; align-items: center; }
+.dt-loan-rate-label { font-size: 12px; }
+.dt-loan-rate-track { flex: 1; border-radius: 6px; height: 6px; }
+.dt-loan-rate-fill { border-radius: 6px; height: 6px; transition: width 0.5s; }
+.dt-loan-rate-value { font-size: 12px; font-weight: 700; }
+
+/* Breakpoints */
+@media (max-width: 1024px) {
+  .dt-stats       { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .dt-grid        { grid-template-columns: 1fr; }
+  .dt-loan-detail { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .dt-stats       { grid-template-columns: 1fr; gap: 10px; }
+  .dt-loan-detail { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+}
+@media (max-width: 400px) {
+  .dt-loan-detail { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+}

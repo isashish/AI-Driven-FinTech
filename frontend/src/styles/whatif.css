@@ -1,0 +1,58 @@
+/* =====================================================
+   WhatIf.css — All WhatIf page styles
+   ===================================================== */
+
+.wi-page { display: flex; flex-direction: column; gap: 20px; }
+
+/* Layout */
+.wi-grid { display: grid; grid-template-columns: 310px 1fr; gap: 20px; }
+.wi-right { display: flex; flex-direction: column; gap: 16px; }
+
+/* Sliders card */
+.wi-sliders-title { font-weight: 800; font-size: 15px; margin-bottom: 20px; }
+.wi-divider { margin: 16px 0; }
+.wi-loan-section-title { font-weight: 700; font-size: 13px; margin-bottom: 14px; }
+
+/* Refinancing result box */
+.wi-refi-box { border-radius: 14px; padding: 14px; }
+.wi-loan-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.wi-loan-mini-tile { border-radius: 8px; padding: 8px; }
+.wi-loan-mini-label { font-size: 10px; }
+.wi-loan-mini-value { font-weight: 800; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+.wi-refi-result { font-size: 13px; font-weight: 700; }
+
+/* Stat row */
+.wi-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+
+/* Area chart card */
+.wi-area-title { font-weight: 800; font-size: 14px; margin-bottom: 4px; }
+.wi-area-sub { font-size: 12px; margin-bottom: 16px; }
+
+/* Sub charts */
+.wi-sub-charts { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.wi-chart-title-sm { font-weight: 800; font-size: 14px; margin-bottom: 14px; }
+
+/* Impact summary */
+.wi-impact-title { font-weight: 800; font-size: 14px; margin-bottom: 16px; }
+.wi-impact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+}
+.wi-impact-label { font-size: 13px; font-weight: 500; }
+.wi-impact-value { font-weight: 800; font-family: 'JetBrains Mono', monospace; font-size: 15px; }
+
+/* Breakpoints */
+@media (max-width: 1024px) {
+  .wi-grid        { grid-template-columns: 1fr; }
+  .wi-sub-charts  { grid-template-columns: 1fr; }
+  .wi-stat-row    { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .wi-stat-row  { grid-template-columns: 1fr; gap: 8px; }
+  .wi-loan-mini { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 400px) {
+  .wi-loan-mini { grid-template-columns: 1fr; }
+}

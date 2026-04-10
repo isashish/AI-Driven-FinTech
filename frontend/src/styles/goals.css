@@ -1,0 +1,117 @@
+/* =====================================================
+   Goals.css — All Goals page styles
+   ===================================================== */
+
+.gl-page { display: flex; flex-direction: column; gap: 20px; }
+
+/* Main layout */
+.gl-grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
+.gl-form { display: flex; flex-direction: column; gap: 16px; }
+.gl-list { display: flex; flex-direction: column; gap: 14px; }
+
+/* Add goal form */
+.gl-form-title { font-weight: 800; font-size: 15px; margin-bottom: 18px; }
+.gl-label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 6px; }
+.gl-name-input {
+  width: 100%;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  border-width: 1.5px;
+  border-style: solid;
+  margin-bottom: 14px;
+}
+.gl-select {
+  width: 100%;
+  border-radius: 10px;
+  padding: 11px 14px;
+  font-size: 14px;
+  outline: none;
+  font-family: inherit;
+  cursor: pointer;
+  border-width: 1.5px;
+  border-style: solid;
+  margin-bottom: 16px;
+}
+.gl-time-box {
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.gl-time-label {
+  font-size: 11px;
+  font-weight: 800;
+  margin-bottom: 4px;
+  letter-spacing: 0.5px;
+}
+.gl-time-value {
+  font-size: 28px;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+}
+.gl-time-sub { font-size: 11px; margin-top: 4px; }
+.gl-add-btn {
+  width: 100%;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 0;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Chart card */
+.gl-chart-title { font-weight: 800; font-size: 14px; margin-bottom: 14px; }
+
+/* Empty state */
+.gl-empty { text-align: center; padding: 64px; }
+.gl-empty-icon { font-size: 52px; margin-bottom: 12px; }
+.gl-empty-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+
+/* Goal card */
+.gl-card-remove {
+  position: absolute;
+  top: 16px; right: 16px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  border-radius: 8px;
+  padding: 4px 12px;
+  font-weight: 700;
+  font-family: inherit;
+}
+.gl-card-header { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+.gl-card-icon {
+  width: 52px; height: 52px;
+  border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.gl-card-name-wrap { flex: 1; min-width: 0; }
+.gl-card-name { font-weight: 800; font-size: 18px; }
+.gl-card-meta { font-size: 12px; margin-top: 2px; }
+.gl-progress-row { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; }
+.gl-progress-track { flex: 1; border-radius: 8px; height: 10px; }
+.gl-progress-fill { border-radius: 8px; height: 10px; transition: width 1s; }
+.gl-progress-pct { font-size: 16px; font-weight: 800; font-family: 'JetBrains Mono', monospace; min-width: 44px; }
+.gl-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.gl-detail-tile { border-radius: 10px; padding: 10px; text-align: center; }
+.gl-detail-label { font-size: 10px; font-weight: 600; margin-bottom: 4px; }
+.gl-detail-value { font-weight: 700; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
+
+/* Breakpoints */
+@media (max-width: 1024px) {
+  .gl-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .gl-detail { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 400px) {
+  .gl-detail { grid-template-columns: 1fr; }
+}
