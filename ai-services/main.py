@@ -55,8 +55,11 @@ def predict_stock(symbol: str, days: int):
     data = fetcher.get_data(symbol)
     if data is None:
         raise HTTPException(status_code=404, detail="Stock not found")
-    current_price = data['Close'].iloc[-1]
-    predicted_price = predictor.train_and_predict(data, days)
+    
+    # Cast to float to prevent JSON serialization errors with NumPy types
+    current_price = float(data['Close'].iloc[-1].item())
+    predicted_price = float(predictor.train_and_predict(data, days))
+    
     return {
         "symbol": symbol,
         "current_price": round(current_price, 2),

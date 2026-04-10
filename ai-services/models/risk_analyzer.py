@@ -27,11 +27,12 @@ class RiskAnalyzer:
         else:
             level = "High"
 
+        # Explicitly cast everything to float for JSON compatibility
         return {
-            "volatility": round(volatility * 100, 2),
-            "avg_return": round(avg_return * 100, 2),
-            "sharpe_ratio": round(sharpe, 2),
-            "max_drawdown": round(max_drawdown * 100, 2),
-            "risk_score": round(risk_score, 2),
-            "risk_level": level
+            "volatility": float(round(volatility * 100, 2)),
+            "avg_return": float(round(avg_return * 100, 2)),
+            "sharpe_ratio": float(round(sharpe, 2)),
+            "max_drawdown": float(round(max_drawdown * 100, 2)),
+            "risk_score": float(round(risk_score, 2)),
+            "risk_level": str(level)
         }
