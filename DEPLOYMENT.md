@@ -4,13 +4,13 @@ Since your project contains **Frontend (React)**, **Backend (Node.js)**, and **A
 
 ---
 
-## 1. AI Worker (The ML Brain)
+## 1. Unified AI Services (Stock ML & Financial Planning)
 *   **Platform**: [Vercel](https://vercel.com) or [Render](https://render.com)
-*   **Root Directory**: `ai_worker`
-*   **Build Command**: `pip install -r requirements.txt`
+*   **Root Directory**: `ai-services`
+*   **Build Command**: `pip install -r requirement.txt`
 *   **Environment Variables**: 
-    - `GEMINI_API_KEY`: (Optional for ML mode)
-*   **Note**: Copy the provided `vercel.json` in the `ai_worker` folder to ensure it runs as a serverless function.
+    - `PYTHON_VERSION`: 3.12 (Recommended)
+*   **Note**: The provided `vercel.json` inside `ai-services` is already configured to run `app.py`.
 
 ---
 
@@ -37,7 +37,7 @@ Since your project contains **Frontend (React)**, **Backend (Node.js)**, and **A
 ---
 
 ## 🔄 Final Sync Checklist
-1. Deploy **AI Worker** first -> Get its URL.
+1. Deploy **Unified AI Service** first -> Get its URL.
 2. Deploy **Backend** next -> Add `AI_WORKER_URL` to settings.
 3. Deploy **Frontend** -> Add `VITE_API_BASE_URL`.
 4. **Final Step**: Go back to **Backend** settings and add the `FRONTEND_URL` from Step 3.
