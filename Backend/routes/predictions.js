@@ -197,4 +197,28 @@ router.post('/ai-suggestions', async (req, res) => {
   }
 });
 
+// ─── GET /api/predictions/stock-risk/:symbol ──────────────────────────────
+router.get('/stock-risk/:symbol', async (req, res) => {
+  try {
+    const workerUrl = process.env.AI_WORKER_URL || 'http://localhost:8000';
+    const response = await axios.get(`${workerUrl}/risk/${req.params.symbol.toUpperCase()}`);
+    res.json(response.data);
+  } catch (err) {
+    console.error('Stock Risk error:', err.message);
+    res.status(500).json({ message: 'Failed to fetch stock risk analysis.' });
+  }
+});
+
+// ─── GET /api/predictions/stock-predict/:symbol ───────────────────────────
+router.get('/stock-predict/:symbol', async (req, res) => {
+  try {
+    const workerUrl = process.env.AI_WORKER_URL || 'http://localhost:8000';
+    const response = await axios.get(`${workerUrl}/predict/${req.params.symbol.toUpperCase()}/7`);
+    res.json(response.data);
+  } catch (err) {
+    console.error('Stock Predict error:', err.message);
+    res.status(500).json({ message: 'Failed to fetch stock price prediction.' });
+  }
+});
+
 module.exports = router;

@@ -58,6 +58,8 @@ export const chatAPI = {
 export const predictionsAPI = {
   getAIInvest: (data) => api.post('/predictions/ai-invest', data),
   getAISuggestions: (data) => api.post('/predictions/ai-suggestions', data),
+  getStockRisk: (symbol) => api.get(`/predictions/stock-risk/${symbol}`),
+  getStockPredict: (symbol) => api.get(`/predictions/stock-predict/${symbol}`),
 };
 
 export default api;
