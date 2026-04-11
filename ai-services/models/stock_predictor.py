@@ -27,4 +27,6 @@ class StockPredictor:
         # Add a bit of realistic market noise
         noise = np.random.normal(0, last_price * 0.01)
         
-        return float(prediction + noise)
+        # Ensure we return a python scalar, not a numpy array
+        result = prediction + noise
+        return float(result.item() if hasattr(result, 'item') else result)
