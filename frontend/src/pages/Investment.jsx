@@ -58,21 +58,35 @@ export default function Investment({ profile = {} }) {
 
   const standardData = genInvestData(P, sip, r, yrs);
   // Merge AI forecast data into standard data if available
-  const data = standardData.map((d, i) => ({
-    ...d,
-    ai_forecast: aiData?.growth?.[i]?.ai_forecast || d.value // Fallback to standard
-  }));
+  const data = standardData.map((d, i) => {
+    const yearsElapsed = i; // standardData is yearly
+    return {
+      ...d,
+      ai_forecast: aiData?.growth?.[i]?.ai_forecast || d.value,
+      real_value: Math.round(d.value / Math.pow(1.06, yearsElapsed)) // 6% Inflation
+    };
+  });
 
   const fin = data[data.length - 1];
   const roi = fin.invested ? Math.round(fin.gains / fin.invested * 100) : 0;
   const mult = fin.invested ? (fin.value / fin.invested).toFixed(1) : '–';
 
+  const getCompStats = (rate) => {
+    const d = genInvestData(P, sip, rate, yrs)[yrs];
+    const tax = Math.max(0, (d.gains - 125000) * 0.125); // 12.5% Tax on gains > 1.25L
+    return {
+      ...d,
+      taxValue: d.value - tax,
+      realValue: Math.round(d.value / Math.pow(1.06, yrs))
+    };
+  };
+
   const compData = [
-    { name: 'FD (7%)', ...genInvestData(P, sip, 7, yrs)[yrs] },
-    { name: 'Debt MF (9%)', ...genInvestData(P, sip, 9, yrs)[yrs] },
-    { name: 'Balanced', ...genInvestData(P, sip, 11, yrs)[yrs] },
-    { name: 'Your Rate', ...genInvestData(P, sip, r, yrs)[yrs] },
-    { name: 'Small Cap', ...genInvestData(P, sip, r + 4, yrs)[yrs] },
+    { name: 'FD (7%)', ...getCompStats(7) },
+    { name: 'Debt MF (9%)', ...getCompStats(9) },
+    { name: 'Balanced (12%)', ...getCompStats(12) },
+    { name: 'Your Rate', ...getCompStats(r) },
+    { name: 'Small Cap', ...getCompStats(r + 4) },
   ];
 
   return (
@@ -128,7 +142,7 @@ export default function Investment({ profile = {} }) {
                 </div>
 
                 <div style={{ margin: '8px 0', padding: '12px', background: T.bg, borderRadius: '12px', border: `1px solid ${T.border}` }}>
-                  <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 4 }}>P(Success) Probability</div>
+                  <div style={{ fontSize: 11, color: T.textMuted, marginBottom: 4 }}>Success Probability</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                     <div style={{ flex: 1, height: 6, background: T.border, borderRadius: 3 }}>
                       <div style={{ height: '100%', width: `${aiData?.risk?.probability_of_success || 75}%`, background: T.teal, borderRadius: 3 }} />
@@ -161,7 +175,7 @@ export default function Investment({ profile = {} }) {
             <div className="inv-mult-label">🚀 Wealth Multiplier</div>
             <div className="inv-mult-value">{mult}x</div>
             <div className="inv-mult-desc">
-              Your ₹{fmtK(P)} + ₹{fmtK(sip)}/mo grows to <strong style={{ color: '#fff' }}>{fmtK(fin?.value || 0)}</strong> in {yrs} years
+              Your {fmtK(P)} + {fmtK(sip)}/mo grows to <strong style={{ color: '#fff' }}>{fmtK(fin?.value || 0)}</strong> in {yrs} years
             </div>
           </GradCard>
         </div>
@@ -208,28 +222,14 @@ export default function Investment({ profile = {} }) {
                 <YAxis tick={{ fill: T.textMuted, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={fmtK} />
                 <Tooltip content={<ChartTooltip />} />
                 <Legend wrapperStyle={{ fontSize: 12, color: T.textSub }} />
-                <Area type="monotone" dataKey="value" stroke={T.teal} fill="url(#gVal)" strokeWidth={3} name="Portfolio Value" />
+                <Area type="monotone" dataKey="value" stroke={T.teal} fill="url(#gVal)" strokeWidth={3} name="Current Plan (Gross)" />
                 {showAiForecast && (
                   <Area type="monotone" dataKey="ai_forecast" stroke={T.violet} fill="url(#gAi)" strokeWidth={2} name="AI Market Forecast" strokeDasharray="3 3" />
                 )}
+                <Area type="monotone" dataKey="real_value" stroke={T.rose} fill="transparent" strokeWidth={2} name="Real Value (Inflation Adj)" strokeDasharray="5 5" />
                 <Area type="monotone" dataKey="invested" stroke={T.blue} fill="url(#gInv)" strokeWidth={2} name="Amount Invested" strokeDasharray="6 3" />
               </AreaChart>
             </ResponsiveContainer>
-          </Card>
-
-          {/* --- VEER'S STOCK AI RESEARCH PANEL --- */}
-          <Card style={{ marginTop: 20, border: `1px solid ${T.teal}44` }}>
-            <div className="inv-chart-head" style={{ marginBottom: 20 }}>
-              <div>
-                <div className="inv-chart-title" style={{ color: T.text, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <TrendingUp size={18} color={T.teal} />
-                  AI Stock Research Beta
-                </div>
-                <div className="inv-chart-sub" style={{ color: T.textMuted }}>Deep Learning LSTM Engine for Sequential Time-Series Market Forecasting</div>
-              </div>
-            </div>
-
-            <StockSearchUI api={predictionsAPI} T={T} />
           </Card>
 
           <div className="inv-sub-charts">
@@ -249,18 +249,35 @@ export default function Investment({ profile = {} }) {
             </Card>
 
             <Card>
-              <div className="inv-chart-title-sm" style={{ color: T.text }}>Fund Comparison</div>
+              <div className="inv-chart-title-sm" style={{ color: T.text }}>Fund Comparison (Post-Tax)</div>
               <ResponsiveContainer width="100%" height={190}>
                 <BarChart data={compData} layout="vertical">
                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={T.border} />
                   <XAxis type="number" tick={{ fill: T.textMuted, fontSize: 9 }} axisLine={false} tickLine={false} tickFormatter={fmtK} />
                   <YAxis type="category" dataKey="name" tick={{ fill: T.textSub, fontSize: 10 }} axisLine={false} tickLine={false} width={70} />
                   <Tooltip content={<ChartTooltip />} />
-                  <Bar dataKey="value" fill={T.violet} name="Final Value" radius={[0, 6, 6, 0]} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="value" fill={T.blue + '44'} name="Gross Value" radius={[0, 6, 6, 0]} />
+                  <Bar dataKey="taxValue" fill={T.violet} name="In-Hand (Post-Tax)" radius={[0, 6, 6, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </Card>
           </div>
+
+          {/* --- VEER'S STOCK AI RESEARCH PANEL --- */}
+          <Card style={{ marginTop: 20, border: `1px solid ${T.teal}44` }}>
+            <div className="inv-chart-head" style={{ marginBottom: 20 }}>
+              <div>
+                <div className="inv-chart-title" style={{ color: T.text, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <TrendingUp size={18} color={T.teal} />
+                  AI Stock Research Beta
+                </div>
+                <div className="inv-chart-sub" style={{ color: T.textMuted }}>Deep Learning LSTM Engine for Sequential Time-Series Market Forecasting</div>
+              </div>
+            </div>
+
+            <StockSearchUI api={predictionsAPI} T={T} />
+          </Card>
         </div>
       </div>
     </div>

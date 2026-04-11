@@ -120,16 +120,31 @@ async def risk_estimation(plan: InvestmentPlan):
 @app.post("/ai-suggestions")
 async def ai_suggestions(plan: InvestmentPlan):
     suggestions = []
-    if plan.annual_return > 14:
-        suggestions.append("14%+ returns require Small/Mid-cap exposure. Mix with 20% Index funds for protection.")
-    else:
-        suggestions.append("Your target is safe. Consider a 'Step-up SIP' of 10% annually to reach goals faster.")
     
+    # 1. Inflation & Step-up Logic (6% inflation benchmark)
+    if plan.years >= 8:
+        suggestions.append(f"In {plan.years} years, inflation will likely double costs. Consider a 10% annually increasing 'Step-up SIP' to maintain real purchasing power.")
+    
+    # 2. Tax Efficiency (Real-world LTCG)
+    if plan.years >= 1:
+        suggestions.append("Long-term holding (1yr+) qualifies for 12.5% LTCG tax on gains above ₹1.25L. Plan your partial withdrawals to minimize tax liability.")
+    
+    # 3. High Return Analysis (Small-Cap focus)
+    if plan.annual_return >= 15:
+        suggestions.append(f"Targeting {plan.annual_return}% requires 60%+ exposure to Small/Mid-cap stocks. Ensure you have high risk tolerance for 20-30% temporary drawdowns.")
+    elif plan.annual_return <= 8:
+        suggestions.append("Your target return is below Index benchmarks. A simple Diversified Nifty 50 Index fund could potentially outperform this with lower cost.")
+
+    # 4. Initial Investment vs SIP (STP Logic)
+    if plan.initial_investment > (plan.monthly_sip * 12):
+        suggestions.append("Large lumpsum detected: Instead of direct entry, use a Systematic Transfer Plan (STP) from a Liquid fund into Equity over 6-12 months to average costs.")
+
+    # 5. Horizon Safety
     if plan.years < 3:
-        suggestions.append("Short term horizon detected. Liquid/Hybrid funds are safer than pure equity.")
-    elif plan.years > 7:
-        suggestions.append("Excellent long-term outlook. staying disciplined is key for compounding.")
-        
+        suggestions.append("Short horizon (<3yrs) alert: Equities are volatile here. Arbitrage or Debt funds are safer for capital protection.")
+    elif plan.years > 10:
+        suggestions.append("Generational wealth horizon: Power of compounding is highest in Years 8-10. Avoid checking portfolio weekly to prevent emotional selling.")
+
     return {"suggestions": suggestions}
 
 @app.post("/analyze-goal")
