@@ -85,7 +85,7 @@ router.put('/', async (req, res) => {
 // ─── PUT /api/profile/assets ─────────────────────────────────────────────
 router.put('/assets', async (req, res) => {
   try {
-    const { physicalAssets, liquidAssets, liabilities } = req.body;
+    const { physicalAssets, liquidAssets, liabilities, debts } = req.body;
 
     const profile = await Profile.findOneAndUpdate(
       { userId: req.userId },
@@ -94,7 +94,8 @@ router.put('/assets', async (req, res) => {
           assets: {
             physicalAssets,
             liquidAssets,
-            liabilities
+            liabilities,
+            debts
           }
         }
       },
@@ -115,7 +116,8 @@ router.get('/assets', async (req, res) => {
     const assets = profile?.assets || {
       physicalAssets: { realEstate: 0, gold: 0, vehicles: 0, otherPhysical: 0 },
       liquidAssets: { cash: 0, bankBalance: 0, mutualFunds: 0, stocks: 0, otherLiquid: 0 },
-      liabilities: { homeLoan: 0, carLoan: 0, personalLoan: 0, otherLiabilities: 0 }
+      liabilities: { homeLoan: 0, carLoan: 0, personalLoan: 0, otherLiabilities: 0 },
+      debts: []
     };
 
     res.json({ assets });

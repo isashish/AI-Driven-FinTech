@@ -64,7 +64,15 @@ const profileSchema = new mongoose.Schema({
       carLoan: { type: Number, default: 0 },
       personalLoan: { type: Number, default: 0 },
       otherLiabilities: { type: Number, default: 0 }
-    }
+    },
+    debts: [{
+      name: String,
+      principal: Number,
+      rate: Number,
+      months: Number,
+      type: { type: String, default: 'reducing' },
+      ratePeriod: { type: String, default: 'yearly' }
+    }]
   }
 }, {
   timestamps: true

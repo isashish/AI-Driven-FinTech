@@ -31,9 +31,18 @@ export function calcHealth(p) {
   return isNaN(total) ? 0 : total;
 }
 
-export function calcEMI(P, r, n) {
+export function calcEMI(P, r, n, type = 'reducing') {
   if (!P || !r || !n) return 0;
-  const m = r / 12 / 100;
+  const i = r / 100;
+  
+  if (type === 'flat' || type === 'simple') {
+    // Total Interest = Principal * Rate * (Tenure in Years) / 100
+    const totalInterest = P * i * (n / 12);
+    return Math.round((P + totalInterest) / n);
+  }
+  
+  // Reducing Balance (Standard)
+  const m = i / 12;
   return Math.round(P * m * Math.pow(1 + m, n) / (Math.pow(1 + m, n) - 1));
 }
 
