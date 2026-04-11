@@ -273,12 +273,17 @@ function StockSearchUI({ api, T }) {
         api.getStockRisk(symbol),
         api.getStockPredict(symbol)
       ]);
+
+      if (riskRes.data.error || predictRes.data.error) {
+        throw new Error(riskRes.data.message || predictRes.data.message || 'Stock data error');
+      }
+
       setResults({
         risk: riskRes.data.analysis,
         predict: predictRes.data
       });
     } catch (err) {
-      setError('Could not find stock. Try symbols like RELIANCE, TCS, or AAPL.');
+      setError(err.message || 'Could not find stock. Try symbols like RELIANCE, TCS, or AAPL.');
     } finally {
       setLoading(false);
     }
