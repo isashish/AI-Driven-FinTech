@@ -11,6 +11,7 @@ import traceback
 from models.risk_analyzer import RiskAnalyzer
 from models.stock_predictor import StockPredictor
 from services.data_fetcher import DataFetcher
+from models.goal_advisor import GoalAdvisor
 
 app = FastAPI(title="AI Unified FinTech Services")
 
@@ -37,6 +38,7 @@ async def global_exception_handler(request: Request, exc: Exception):
 fetcher = DataFetcher()
 risk_analyzer = RiskAnalyzer()
 predictor = StockPredictor()
+goal_advisor = GoalAdvisor()
 
 # --- MODELS ---
 class InvestmentPlan(BaseModel):
@@ -129,6 +131,17 @@ async def ai_suggestions(plan: InvestmentPlan):
         suggestions.append("Excellent long-term outlook. staying disciplined is key for compounding.")
         
     return {"suggestions": suggestions}
+
+@app.post("/analyze-goal")
+async def analyze_goal(data: dict):
+    # data: { target, saved, monthly_sip }
+    # Using python dict for flexibility since we are coming from node
+    target = float(data.get('target', 0))
+    saved = float(data.get('saved', 0))
+    monthly_sip = float(data.get('monthly_sip', 0))
+    
+    result = goal_advisor.analyze_goal(target, saved, monthly_sip)
+    return result
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

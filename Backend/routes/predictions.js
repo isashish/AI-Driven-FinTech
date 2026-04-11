@@ -227,4 +227,16 @@ router.get('/stock-predict/:symbol', async (req, res) => {
   }
 });
 
+// ─── POST /api/predictions/ai-goal ───────────────────────────
+router.post('/ai-goal', async (req, res) => {
+  try {
+    const workerUrl = getWorkerUrl();
+    const response = await axios.post(`${workerUrl}/analyze-goal`, req.body);
+    res.json(response.data);
+  } catch (err) {
+    console.error('AI Goal error:', err.message);
+    res.status(500).json({ message: 'AI Worker is currently offline.' });
+  }
+});
+
 module.exports = router;
