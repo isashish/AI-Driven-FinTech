@@ -15,11 +15,18 @@
 
 /* Refinancing result box */
 .wi-refi-box { border-radius: 14px; padding: 14px; }
-.wi-loan-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-.wi-loan-mini-tile { border-radius: 8px; padding: 8px; }
-.wi-loan-mini-label { font-size: 10px; }
-.wi-loan-mini-value { font-weight: 800; font-size: 13px; font-family: 'JetBrains Mono', monospace; }
-.wi-refi-result { font-size: 13px; font-weight: 700; }
+.wi-loan-mini { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.wi-loan-mini-tile { 
+  border-radius: 12px; 
+  padding: 12px; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center;
+  min-height: 70px;
+}
+.wi-loan-mini-label { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+.wi-loan-mini-value { font-weight: 800; font-size: 15px; font-family: 'JetBrains Mono', monospace; word-break: break-all; }
+.wi-refi-result { font-size: 14px; font-weight: 800; }
 
 /* Stat row */
 .wi-stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -49,10 +56,16 @@
   .wi-sub-charts  { grid-template-columns: 1fr; }
   .wi-stat-row    { grid-template-columns: 1fr 1fr; }
 }
-@media (max-width: 640px) {
-  .wi-stat-row  { grid-template-columns: 1fr; gap: 8px; }
-  .wi-loan-mini { grid-template-columns: 1fr 1fr; }
+@media (max-width: 500px) {
+  .wi-stat-row { grid-template-columns: 1fr; }
+  .wi-sub-charts { grid-template-columns: 1fr; }
+  .wi-page { padding: 4px; }
+  .wi-area-title { font-size: 13px; }
 }
-@media (max-width: 400px) {
+
+@media (max-width: 420px) {
   .wi-loan-mini { grid-template-columns: 1fr; }
+  .wi-loan-mini-tile { min-height: auto; padding: 16px; }
+  .wi-loan-mini-value { font-size: 18px; }
+  .wi-grid { gap: 12px; }
 }
