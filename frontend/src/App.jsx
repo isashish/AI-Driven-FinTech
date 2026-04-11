@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ThemeProvider, useTheme } from './context/ThemeContext.jsx';
 import MobileNavbar from './components/MobileNavbar';
 
@@ -62,6 +62,22 @@ function AppInner() {
   const [goals, setGoals] = useState([]);
 
   const [resetToken, setResetToken] = useState(null);
+  const mainRef = useRef(null);
+
+  // --- SCROLL TO TOP LOGIC ---
+  useEffect(() => {
+    // Scroll the main content area to top
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0);
+    }
+    // Scroll the entire window to top (for landing/auth pages)
+    window.scrollTo(0, 0);
+    
+    // Safety check for browsers that remember scroll position on reload
+    if ('scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, [page, screen]);
 
   // Check auth and fetch data
   useEffect(() => {
@@ -255,7 +271,7 @@ function AppInner() {
         </div>
 
         {/* MAIN */}
-        <div className="app-main" style={{ background: T.bg }}>
+        <div className="app-main" ref={mainRef} style={{ background: T.bg }}>
           {pages[page]}
         </div>
       </div>
