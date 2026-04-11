@@ -319,22 +319,22 @@ function StockSearchUI({ api, T }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
           <div style={{ padding: 15, background: T.bg, borderRadius: 15, border: `1px solid ${T.border}` }}>
             <div style={{ color: T.textMuted, fontSize: 12, marginBottom: 5 }}>AI Prediction (7 Days)</div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: T.teal }}>₹{results.predict.predicted_price}</div>
+            <div style={{ fontSize: 22, fontWeight: 800, color: T.teal }}>₹{results?.predict?.predicted_price}</div>
             <div style={{ color: T.textSub, fontSize: 11, marginTop: 4 }}>
-              Current: ₹{results.predict.current_price}
-              <span style={{ marginLeft: 8, color: results.predict.predicted_price > results.predict.current_price ? T.green : T.rose }}>
-                ({((results.predict.predicted_price / results.predict.current_price - 1) * 100).toFixed(1)}%)
+              Current: ₹{results?.predict?.current_price}
+              <span style={{ marginLeft: 8, color: results?.predict?.predicted_price > results?.predict?.current_price ? T.green : T.rose }}>
+                ({((results?.predict?.predicted_price / results?.predict?.current_price - 1) * 100).toFixed(1)}%)
               </span>
             </div>
           </div>
 
           <div style={{ padding: 15, background: T.bg, borderRadius: 15, border: `1px solid ${T.border}` }}>
             <div style={{ color: T.textMuted, fontSize: 12, marginBottom: 5 }}>Security Risk</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: results.risk.risk_level === 'High' ? T.rose : T.teal }}>
-              {results.risk.risk_level} Risk
+            <div style={{ fontSize: 20, fontWeight: 800, color: results?.risk?.risk_level === 'High' ? T.rose : T.teal }}>
+              {results?.risk?.risk_level} Risk
             </div>
             <div style={{ color: T.textSub, fontSize: 11, marginTop: 4 }}>
-              Volatility: {results.risk.volatility}% · Sharpe: {results.risk.sharpe_ratio}
+              Volatility: {results?.risk?.volatility}% · Sharpe: {results?.risk?.sharpe_ratio}
             </div>
           </div>
         </div>
