@@ -175,7 +175,7 @@ function AppInner() {
     dashboard:  <Dashboard  profile={profile} goals={goals} refreshData={fetchData} />,
     profile:    <Profile    profile={profile} setProfile={setProfile} onUpdate={fetchData} />,
     goals:      <Goals      goals={goals} setGoals={setGoals} profile={profile} onUpdate={fetchData} />,
-    investment: <Investment />,
+    investment: <Investment profile={profile} />,
     debt:       <Debt />,
     whatif:     <WhatIf     profile={profile} />,
     chatbot:    <Chatbot    profile={profile} />,

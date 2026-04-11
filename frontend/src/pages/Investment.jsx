@@ -8,12 +8,17 @@ import { genInvestData, fmtK, IMGS } from '../utils.jsx';
 import { predictionsAPI } from '../api';
 import { Brain, ShieldAlert, TrendingUp, Sparkles, RefreshCw } from 'lucide-react';
 
-export default function Investment() {
+export default function Investment({ profile = {} }) {
   const { T, isDark } = useTheme();
-  const [P, setP] = useState(100000);
-  const [sip, setSip] = useState(10000);
+  const [P, setP] = useState(0);
+  const [sip, setSip] = useState(profile.savings || 10000);
   const [r, setR] = useState(12);
   const [yrs, setYrs] = useState(10);
+
+  // Sync SIP with profile savings if profile changes
+  useEffect(() => {
+    if (profile.savings) setSip(profile.savings);
+  }, [profile.savings]);
 
   // AI States
   const [aiLoading, setAiLoading] = useState(false);
@@ -21,10 +26,17 @@ export default function Investment() {
   const [aiSuggestions, setAiSuggestions] = useState([]);
   const [showAiForecast, setShowAiForecast] = useState(true);
 
-  const fetchAIInsights = async () => {
+  const fetchAIInsights = async (reset = false) => {
+    let currentSip = sip;
+    if (reset && profile.savings) {
+      currentSip = profile.savings;
+      setSip(currentSip);
+      setP(0); // Reset initial investment to 0 as well
+    }
+    
     setAiLoading(true);
     try {
-      const plan = { initial_investment: P, monthly_sip: sip, annual_return: r, years: yrs };
+      const plan = { initial_investment: reset ? 0 : P, monthly_sip: currentSip, annual_return: r, years: yrs };
       const [investRes, suggRes] = await Promise.all([
         predictionsAPI.getAIInvest(plan),
         predictionsAPI.getAISuggestions(plan)
@@ -81,7 +93,7 @@ export default function Investment() {
                 size={14}
                 className={aiLoading ? 'spin' : ''}
                 style={{ cursor: 'pointer', opacity: 0.5 }}
-                onClick={fetchAIInsights}
+                onClick={() => fetchAIInsights(true)}
               />
             </div>
             <RangeInput label="Initial Investment" min={0} max={2000000} step={10000} value={P} onChange={setP} format={fmtK} />
