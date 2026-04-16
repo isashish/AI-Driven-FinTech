@@ -239,4 +239,16 @@ router.post('/ai-goal', async (req, res) => {
   }
 });
 
+// ─── POST /api/predictions/ai-cashflow ───────────────────────────
+router.post('/ai-cashflow', async (req, res) => {
+  try {
+    const workerUrl = getWorkerUrl();
+    const response = await axios.post(`${workerUrl}/predict-cashflow`, req.body);
+    res.json(response.data);
+  } catch (err) {
+    console.error('AI Cashflow error:', err.message);
+    res.status(500).json({ message: 'AI Worker is currently offline.' });
+  }
+});
+
 module.exports = router;

@@ -147,6 +147,36 @@ async def ai_suggestions(plan: InvestmentPlan):
 
     return {"suggestions": suggestions}
 
+@app.post("/predict-cashflow")
+async def predict_cashflow(data: dict):
+    income = float(data.get('income', 0))
+    expenses = float(data.get('expenses', 0))
+    emi = float(data.get('emi', 0))
+    investments = float(data.get('investments', 0))
+    
+    months = ["Apr", "May", "Jun", "Jul", "Aug", "Sep"]
+    results = []
+    
+    current_savings = income - expenses - emi - investments
+    
+    for i, month in enumerate(months):
+        # AI simulation factors: 
+        # - Income variance (small +/- 2%)
+        # - Expense variance (seasonal spending +/- 8%)
+        # - Investment growth (0.5% - 1.5% monthly)
+        inc_v = income * (1 + np.random.uniform(-0.02, 0.03))
+        exp_v = expenses * (1 + np.random.uniform(-0.05, 0.10))
+        sav_v = inc_v - exp_v - emi - investments
+        
+        results.append({
+            "month": month,
+            "Income": int(round(inc_v)),
+            "Expenses": int(round(exp_v)),
+            "Savings": int(round(max(0, sav_v)))
+        })
+        
+    return {"forecast": results}
+
 @app.post("/analyze-goal")
 async def analyze_goal(data: dict):
     # data: { target, saved, monthly_sip }

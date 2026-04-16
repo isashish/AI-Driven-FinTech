@@ -61,6 +61,7 @@ export const predictionsAPI = {
   getStockRisk: (symbol) => api.get(`/predictions/stock-risk/${symbol}`),
   getStockPredict: (symbol) => api.get(`/predictions/stock-predict/${symbol}`),
   getAIGoal: (data) => api.post('/predictions/ai-goal', data),
+  getAICashflow: (data) => api.post('/predictions/ai-cashflow', data),
 };
 
 export default api;

@@ -8,7 +8,14 @@ class GoalAdvisor:
 
     def analyze_goal(self, target, saved, monthly_sip):
         if monthly_sip <= 0:
-            return {"error": "Monthly savings must be greater than 0"}
+            return {
+                "probability": 0,
+                "status": "Infeasible",
+                "inflation_adjusted_target": int(round(target * 1.5)),
+                "recommended_step_up": 10,
+                "years_saved": 0,
+                "message": "Set a monthly savings amount to start tracking this goal."
+            }
 
         gap = target - saved
         if gap <= 0:

@@ -16,15 +16,21 @@ export function calcHealth(p) {
   const emergency = Number(p.emergency) || 0;
   const expenses = Number(p.expenses) || 0;
 
-  // DERIVED SAVINGS: What's left after basics AND investments AND emergency contributions
-  // This matches the logic in Profile.jsx: income - expenses - emi - investments - emergency
-  const derivedSavings = Math.max(0, income - expenses - emi - investments - emergency);
-
-  const sr  = clamp(((derivedSavings / income) * 100) / 20, 0, 1) * 25;
-  const dti = clamp(1 - (emi / income), 0, 1) * 25;
-  const ir  = clamp(((investments / income) * 100) / 15, 0, 1) * 25;
+  // TOTAL SURPLUS: Money that isn't spent on basics or debt (includes what you eventually save + invest)
+  const totalSurplus = Math.max(0, income - expenses - emi);
   
-  const efTarget = expenses * 6;
+  // 1. Savings/Surplus Rate (25 pts): Target >= 20% of income
+  const sr = clamp((totalSurplus / income) / 0.2, 0, 1) * 25;
+
+  // 2. Debt-to-Income (25 pts): Target EMI <= 35% of income. Penalty starts after 60%.
+  const dtiRatio = emi / income;
+  const dti = dtiRatio > 0.6 ? 0 : clamp((1 - dtiRatio / 0.6), 0, 1) * 25;
+
+  // 3. Investment Rate (25 pts): Target >= 10% of income
+  const ir = clamp((investments / income) / 0.1, 0, 1) * 25;
+  
+  // 4. Emergency Fund (25 pts): Target = 6 months of expenses
+  const efTarget = (expenses + emi) * 6;
   const efScore = efTarget > 0 ? clamp(emergency / efTarget, 0, 1) * 25 : 25;
 
   const total = Math.round(sr + dti + ir + efScore);

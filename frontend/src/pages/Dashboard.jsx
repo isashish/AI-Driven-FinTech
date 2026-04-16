@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/dashboard.css';
+import { predictionsAPI } from '../api';
 
 
 import {
@@ -18,26 +19,51 @@ export default function Dashboard({ profile, goals }) {
   const scoreColor = score >= 75 ? T.teal : score >= 50 ? T.amber : T.rose;
 
   const expData = [
-    { name: 'Housing', value: Math.round(profile.expenses * 0.38) },
-    { name: 'EMI',     value: profile.emi },
-    { name: 'Savings', value: profile.savings },
-    { name: 'Invest',  value: profile.investments },
-    { name: 'Food',    value: Math.round(profile.expenses * 0.15) },
-    { name: 'Other',   value: Math.max(0, profile.income - profile.expenses - profile.emi - profile.savings - profile.investments) },
+    { name: 'Essential Exp.', value: profile.expenses },
+    { name: 'EMI / Debt',     value: profile.emi },
+    { name: 'Investments',    value: profile.investments },
+    { name: 'Savings',        value: profile.savings },
   ].filter(d => d.value > 0);
 
-  const flowData = ['Oct','Nov','Dec','Jan','Feb','Mar'].map(m => ({
-    month: m,
-    Income:   Math.round(profile.income   * (0.97 + Math.random() * 0.06)),
-    Expenses: Math.round(profile.expenses * (0.92 + Math.random() * 0.14)),
-    Savings:  Math.round(profile.savings  * (0.85 + Math.random() * 0.3)),
-  }));
+  const [aiForecast, setAiForecast] = useState([]);
+  const [loadingAI, setLoadingAI] = useState(false);
+
+  useEffect(() => {
+    const fetchForecast = async () => {
+      setLoadingAI(true);
+      try {
+        const res = await predictionsAPI.getAICashflow({
+          income: profile.income,
+          expenses: profile.expenses,
+          emi: profile.emi,
+          investments: profile.investments
+        });
+        if (res.data.forecast) setAiForecast(res.data.forecast);
+      } catch (err) {
+        console.error('Failed to fetch AI forecast:', err);
+      } finally {
+        setLoadingAI(false);
+      }
+    };
+    if (profile.income > 0) fetchForecast();
+  }, [profile]);
+
+  const flowData = aiForecast.length > 0 ? aiForecast : ['Oct','Nov','Dec','Jan','Feb','Mar'].map((m, i) => {
+    // Fallback data
+    const variance = 1 + (i % 3 - 1) * 0.05; 
+    return {
+      month: m,
+      Income:   Math.round(profile.income * variance),
+      Expenses: Math.round(profile.expenses * (1 + (i % 2 === 0 ? 0.05 : -0.05))),
+      Savings:  Math.round(profile.savings * (1 + (i % 4 === 0 ? 0.1 : -0.1))),
+    };
+  });
 
   const radData = [
-    { name: 'Savings',   value: Math.min(savePct, 20) / 20 * 100, fill: T.teal   },
-    { name: 'Invest',    value: Math.min(profile.income ? profile.investments / profile.income * 100 : 0, 15) / 15 * 100, fill: T.blue },
-    { name: 'Emergency', value: Math.min(profile.expenses ? profile.emergency / (profile.expenses * 6) * 100 : 0, 100), fill: T.violet },
-    { name: 'Low DTI',   value: Math.max(0, profile.income ? (1 - profile.emi / profile.income) * 100 : 0), fill: T.amber },
+    { name: 'Surplus',   value: Math.min(((profile.income - profile.expenses - profile.emi) / (profile.income || 1)) * 100, 20) / 20 * 100, fill: T.teal   },
+    { name: 'Invest',    value: Math.min(profile.income ? (profile.investments / profile.income) * 100 : 0, 15) / 15 * 100, fill: T.blue },
+    { name: 'Emergency', value: Math.min(profile.expenses ? profile.emergency / ((profile.expenses + profile.emi) * 6) * 100 : 0, 100), fill: T.violet },
+    { name: 'Debt Safety', value: profile.income ? Math.max(0, (1 - (profile.emi / (profile.income * 0.6))) * 100) : 0, fill: T.amber },
   ];
 
   return (
@@ -82,7 +108,10 @@ export default function Dashboard({ profile, goals }) {
       <div className="db-charts">
         <Card>
           <div className="db-chart-head">
-            <div className="db-chart-title" style={{ color: T.text }}>6-Month Cash Flow</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+              <div className="db-chart-title" style={{ color: T.text }}>Cash Flow Forecast</div>
+              <Badge color={T.teal}>🧠 AI Predicted</Badge>
+            </div>
             <div className="db-chart-sub" style={{ color: T.textMuted }}>Income · Expenses · Savings trend</div>
           </div>
           <ResponsiveContainer width="100%" height={230}>

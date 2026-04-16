@@ -131,7 +131,7 @@ export default function Profile({ profile, setProfile, onUpdate }) {
         savings: newSavings
       }));
     }
-  }, [profile.income, profile.expenses, profile.emi]);
+  }, [profile.income, profile.expenses, profile.emi, profile.investments, profile.emergency]);
 
   // Sync financial fields with profile
   useEffect(() => {
@@ -181,10 +181,29 @@ export default function Profile({ profile, setProfile, onUpdate }) {
 
         if (response.data.success && response.data.extracted) {
           const items = response.data.extracted;
-          // Add extracted items to assets
+          
+          // Get current assets first
+          const assetsRes = await profileAPI.getAssets();
+          let currentAssets = assetsRes.data.assets || { physicalAssets: {}, liquidAssets: {}, liabilities: {}, debts: [] };
+          
+          // Aggregate all extracted items
           for (const item of items) {
-            await addScannedAsset(item);
+            const { label, value, type } = item;
+            let assetKey = '';
+            const options = type === 'physical' ? physicalAssetOptions : type === 'liquid' ? liquidAssetOptions : liabilityOptions;
+            const match = options.find(o => label.toLowerCase().includes(o.label.toLowerCase()));
+            assetKey = match ? match.id : type === 'physical' ? 'otherPhysical' : type === 'liquid' ? 'otherLiquid' : 'otherLiabilities';
+            
+            const category = type === 'physical' ? 'physicalAssets' : type === 'liquid' ? 'liquidAssets' : 'liabilities';
+            currentAssets[category] = { 
+              ...currentAssets[category], 
+              [assetKey]: (currentAssets[category]?.[assetKey] || 0) + Number(value)
+            };
           }
+
+          // Batch update
+          await profileAPI.updateAssets(currentAssets);
+          
           alert(`Successfully scanned ${items.length} items!`);
           loadAssets();
         } else {
@@ -199,35 +218,7 @@ export default function Profile({ profile, setProfile, onUpdate }) {
     }
   };
 
-  const addScannedAsset = async (item) => {
-    const { label, value, type } = item;
-    
-    // Determine the key based on label if possible, or use default
-    let assetKey = '';
-    const options = type === 'physical' ? physicalAssetOptions : type === 'liquid' ? liquidAssetOptions : liabilityOptions;
-    const match = options.find(o => label.toLowerCase().includes(o.label.toLowerCase()));
-    assetKey = match ? match.id : type === 'physical' ? 'otherPhysical' : type === 'liquid' ? 'otherLiquid' : 'otherLiabilities';
 
-    try {
-      // Get current assets for this category
-      const response = await profileAPI.getAssets();
-      const currentAssets = response.data.assets || { physicalAssets: {}, liquidAssets: {}, liabilities: {} };
-      
-      const category = type === 'physical' ? 'physicalAssets' : type === 'liquid' ? 'liquidAssets' : 'liabilities';
-      
-      const updatedCategory = { 
-        ...currentAssets[category], 
-        [assetKey]: (currentAssets[category][assetKey] || 0) + Number(value)
-      };
-
-      await profileAPI.updateAssets({
-        ...currentAssets,
-        [category]: updatedCategory
-      });
-    } catch (err) {
-      console.error('Error adding scanned asset:', err);
-    }
-  };
 
   const getEMILevel = () => {
     const emiRatio = profile.income > 0 ? (profile.emi / profile.income) * 100 : 0;
@@ -531,10 +522,13 @@ export default function Profile({ profile, setProfile, onUpdate }) {
         return obj;
       };
 
+      // IMPORTANT: Preserve existing debts from profile state or fetch them
+      // In this app, App.jsx fetches the whole profile which includes profile.assets.debts
       const assetsToSave = {
         physicalAssets: convertToObj(assets.physicalAssets),
         liquidAssets: convertToObj(assets.liquidAssets),
-        liabilities: convertToObj(assets.liabilities)
+        liabilities: convertToObj(assets.liabilities),
+        debts: profile.assets?.debts || [] // Preserve debts!
       };
 
       // Save assets to backend

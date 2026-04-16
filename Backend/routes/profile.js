@@ -207,8 +207,13 @@ router.post('/scan', async (req, res) => {
     ]);
 
     const responseText = result.response.text().trim();
-    const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-    const data = JSON.parse(cleanJson);
+    // More robust JSON extraction
+    const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      console.error('No JSON found in AI response:', responseText);
+      return res.status(500).json({ message: 'AI could not format data correctly.' });
+    }
+    const data = JSON.parse(jsonMatch[0]);
 
     res.json({ success: true, extracted: data });
   } catch (err) {
