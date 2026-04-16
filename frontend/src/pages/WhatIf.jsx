@@ -5,15 +5,18 @@ import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, StatCard, RangeInput, ImgBanner, ChartTooltip } from '../components/UI.jsx';
 import { calcEMI, fmtK, fmt, IMGS } from '../utils.jsx';
 import { Brain, ShieldCheck, Zap, RefreshCw } from 'lucide-react';
+import { loansAPI } from '../api';
 
 export default function WhatIf({ profile }) {
   const { T } = useTheme();
+  const [activeLoans, setActiveLoans] = useState([]);
 
-  // Helper to get total debt from profile
+  // Helper to get total debt from database primarily
   const getTotalDebt = () => {
-    if (profile.assets?.debts?.length > 0) {
-      return profile.assets.debts.reduce((sum, d) => sum + (d.principal || 0), 0);
+    if (activeLoans?.length > 0) {
+      return activeLoans.reduce((sum, d) => sum + (d.principalAmount || d.principal || 0), 0);
     }
+    // Fallback if no active loans found in DB
     const liab = profile.assets?.liabilities || {};
     return (liab.homeLoan || 0) + (liab.carLoan || 0) + (liab.personalLoan || 0) + (liab.otherLiabilities || 0);
   };
@@ -27,24 +30,37 @@ export default function WhatIf({ profile }) {
   const [baseRate, setBaseRate] = useState(8.5);
   const [baseMo,   setBaseMo]   = useState(240);
 
-  // Sync with profile on load or change
+  // Sync with profile and loans database
   React.useEffect(() => {
-    const total = getTotalDebt();
-    if (total > 0) setLoanAmt(total);
-    
-    // Set loan rate to highest debt rate if available
-    if (profile.assets?.debts?.length > 0) {
-      const maxR = Math.max(...profile.assets.debts.map(d => d.ratePeriod === 'monthly' ? d.rate * 12 : d.rate));
-      const maxM = Math.max(...profile.assets.debts.map(d => d.months || 0));
-      if (maxR > 0) {
-        setBaseRate(maxR);
-        setLoanRate(maxR);
+    const initData = async () => {
+      try {
+        const res = await loansAPI.getAll();
+        const loans = res.data.loans || [];
+        setActiveLoans(loans);
+
+        const total = loans.length > 0 
+          ? loans.reduce((sum, d) => sum + (d.principalAmount || 0), 0)
+          : getTotalDebt();
+        
+        if (total > 0) setLoanAmt(total);
+        
+        if (loans.length > 0) {
+          const maxR = Math.max(...loans.map(d => d.annualInterestRate || 0));
+          const maxM = Math.max(...loans.map(d => d.tenureMonths || 0));
+          if (maxR > 0) {
+            setBaseRate(maxR);
+            setLoanRate(maxR);
+          }
+          if (maxM > 0) {
+            setBaseMo(maxM);
+            setLoanMo(maxM);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to init simulator loans:', err);
       }
-      if (maxM > 0) {
-        setBaseMo(maxM);
-        setLoanMo(maxM);
-      }
-    }
+    };
+    initData();
   }, [profile]);
 
   const base = {
@@ -166,9 +182,9 @@ export default function WhatIf({ profile }) {
               <button 
                 onClick={() => {
                   setLoanAmt(getTotalDebt());
-                  if (profile.assets?.debts?.length > 0) {
-                    const maxR = Math.max(...profile.assets.debts.map(d => d.ratePeriod === 'monthly' ? d.rate * 12 : d.rate));
-                    const maxM = Math.max(...profile.assets.debts.map(d => d.months || 0));
+                  if (activeLoans?.length > 0) {
+                    const maxR = Math.max(...activeLoans.map(d => d.annualInterestRate || 0));
+                    const maxM = Math.max(...activeLoans.map(d => d.tenureMonths || 0));
                     if (maxR > 0) { setBaseRate(maxR); setLoanRate(maxR); }
                     if (maxM > 0) { setBaseMo(maxM); setLoanMo(maxM); }
                   }
