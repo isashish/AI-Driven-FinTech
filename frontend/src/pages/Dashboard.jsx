@@ -182,6 +182,44 @@ export default function Dashboard({ profile, goals }) {
         </Card>
       </div>
 
+      {/* Active Loans Section */}
+      {profile.assets?.debts?.length > 0 && (
+        <Card style={{ marginBottom: 20 }}>
+          <div className="db-goals-header">
+            <div>
+              <div className="db-goals-title" style={{ color: T.text }}>Active Loans & Liabilities</div>
+              <div className="db-goals-sub" style={{ color: T.textMuted }}>Tracking your optimization journey</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: 11, fontWeight: 800, color: T.rose }}>TOTAL PRINCIPAL</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: T.text }}>
+                {fmtK(profile.assets.debts.reduce((sum, l) => sum + (l.principal || 0), 0))}
+              </div>
+            </div>
+          </div>
+          <div className="db-goals-grid">
+            {profile.assets.debts.map(l => {
+              const c = l.rate > 15 ? T.rose : l.rate > 10 ? T.amber : T.teal;
+              return (
+                <div key={l.id} className="db-goal-card" style={{ background: T.bg, border: `1px solid ${T.border}`, borderLeft: `4px solid ${c}` }}>
+                  <div className="db-goal-card-header">
+                    <span className="db-goal-name" style={{ color: T.text, fontWeight: 700 }}>{l.name}</span>
+                    <Badge color={c}>{l.rate}% p.a.</Badge>
+                  </div>
+                  <div style={{ marginTop: 8, fontSize: 13, color: T.textSub }}>
+                     Due: <span style={{ fontWeight: 800 }}>{fmtK(l.principal)}</span> over {l.months} months
+                  </div>
+                  <div className="db-goal-bar-track" style={{ background: T.border, height: 4, marginTop: 10 }}>
+                    <div className="db-goal-bar-fill"
+                      style={{ background: c, width: '100%', opacity: 0.3 }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
+
       {/* Goals */}
       {goals.length > 0 && (
         <Card>
