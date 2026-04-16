@@ -103,6 +103,10 @@
   .dt-controls { width: 100%; }
 }
 
+@media (max-width: 1024px) {
+  .dt-loan-detail { grid-template-columns: repeat(3, 1fr); gap: 12px; }
+}
+
 @media (max-width: 768px) {
   .dt-stats { grid-template-columns: 1fr; gap: 12px; }
   .dt-grid { gap: 15px; }
@@ -113,6 +117,7 @@
 
 @media (max-width: 480px) {
   .dt-page { padding: 8px; }
+  .dt-stats { grid-template-columns: 1fr !important; gap: 10px; }
   .dt-strategy-title { font-size: 1.1rem; }
   .dt-loan-name { font-size: 15px !important; margin-bottom: 8px !important; }
   .dt-loan-card { padding: 12px !important; }
@@ -122,6 +127,6 @@
   .dt-loan-detail { gap: 6px !important; }
   .dt-loan-del-btn { font-size: 14px !important; }
   
-  /* Make the prediction box vertically stack for very small phones if needed */
+  /* Make the prediction box vertically stack for very small phones */
   .dt-prediction-results { flex-direction: column; gap: 15px !important; }
 }
