@@ -73,7 +73,13 @@ const profileSchema = new mongoose.Schema({
       type: { type: String, default: 'reducing' },
       ratePeriod: { type: String, default: 'yearly' }
     }]
-  }
+  },
+  
+  // Custom Priority Hierarchy
+  priorities: [{
+    id: String,
+    priority: { type: String, enum: ['High', 'Medium', 'Low'], default: 'Medium' }
+  }]
 }, {
   timestamps: true
 });

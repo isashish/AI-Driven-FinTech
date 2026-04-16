@@ -54,7 +54,7 @@ router.put('/', async (req, res) => {
       'otherIncome', 'rent', 'utilities', 'groceries', 'transport',
       'entertainment', 'otherExpenses', 'totalSavings', 'totalInvestments',
       'emergencyFundTarget', 'riskTolerance', 'age', 'occupation',
-      'retirementAge', 'currency', 'phone', 'location',
+      'retirementAge', 'currency', 'phone', 'location', 'priorities'
     ];
 
     const updates = {};

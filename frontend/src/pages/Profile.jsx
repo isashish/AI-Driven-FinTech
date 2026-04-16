@@ -367,87 +367,56 @@ export default function Profile({ profile, setProfile, onUpdate }) {
   /* -------------------------
      DYNAMIC PRIORITIES BASED ON USER DATA
   ------------------------- */
-  const generateDynamicPriorities = () => {
+  const generateDynamicPriorities = (savedPriorities = []) => {
+    // Helper to get value of a specific asset by id
+    const getAssetVal = (cat, assetId) => {
+      return assets[cat].find(a => a.id === assetId)?.value || 0;
+    }
+
+    // Live calculations: Prioritize breakdown entries, fallback to asset lists
+    const assetEmergency = getAssetVal('liquidAssets', 'cash') + getAssetVal('liquidAssets', 'bankBalance') + getAssetVal('liquidAssets', 'fixedDeposit');
+    const assetInvest = getAssetVal('liquidAssets', 'mutualFunds') + getAssetVal('liquidAssets', 'stocks');
+    
+    // Final values used in Hierarchy
+    const emergencyCurrent = profile.emergency || assetEmergency;
+    const investCurrent = profile.investments || assetInvest;
+    const debtCurrent = profile.emi || assets.liabilities.reduce((sum, a) => sum + a.value, 0);
+
     const emergencyNeed = (profile.expenses || 0) * 6;
     const healthNeed = (profile.income || 0) * 0.04;
     const surplusAmount = Math.max(0, (profile.income || 0) - (profile.expenses || 0) - (profile.emi || 0));
     
-    const basePriorities = [
-      { 
-        id: 'emergency', 
-        label: 'Emergency Fund', 
-        need: emergencyNeed, 
-        current: profile.emergency || 0,
-        priority: 'High', 
-        color: T.rose || '#ef4444', 
-        icon: '🛡️',
-        progress: emergencyNeed > 0 ? Math.min(100, ((profile.emergency || 0) / emergencyNeed) * 100) : 0
-      },
-      { 
-        id: 'health', 
-        label: 'Health Insurance', 
-        need: healthNeed, 
-        current: 0,
-        priority: 'High', 
-        color: T.rose || '#ef4444', 
-        icon: '❤️',
-        progress: 0
-      },
-      { 
-        id: 'emi', 
-        label: 'EMI / Debt Repay', 
-        need: profile.emi || 0, 
-        current: (profile.emi || 0),
-        priority: 'High', 
-        color: T.amber || '#f59e0b', 
-        icon: '💳',
-        progress: (profile.emi || 0) > 0 ? 100 : 0
-      },
-      { 
-        id: 'mutual', 
-        label: 'Mutual Funds/SIP', 
-        need: surplusAmount * 0.5, 
-        current: profile.investments || 0,
-        priority: 'Medium', 
-        color: T.amber || '#f59e0b', 
-        icon: '📊',
-        progress: surplusAmount > 0 ? Math.min(100, ((profile.investments || 0) / (surplusAmount * 0.5)) * 100) : 0
-      },
-      { 
-        id: 'home', 
-        label: 'Home Loan Prepayment', 
-        need: surplusAmount * 0.3, 
-        current: 0,
-        priority: 'Medium', 
-        color: T.blue || '#3b82f6', 
-        icon: '🏠',
-        progress: 0
-      },
-      { 
-        id: 'lifestyle', 
-        label: 'Lifestyle Goals', 
-        need: surplusAmount * 0.2, 
-        current: 0,
-        priority: 'Low', 
-        color: T.teal || '#14b8a6', 
-        icon: '✨',
-        progress: 0
-      },
+    // Base configuration
+    const baseConfigs = [
+      { id: 'emergency', label: 'Emergency Fund', icon: '🛡️', defaultPriority: 'High', color: T.rose || '#ef4444', need: emergencyNeed, current: emergencyCurrent },
+      { id: 'health', label: 'Health Insurance', icon: '❤️', defaultPriority: 'High', color: T.rose || '#ef4444', need: healthNeed, current: 0 },
+      { id: 'emi', label: 'EMI / Debt Repay', icon: '💳', defaultPriority: 'High', color: T.amber || '#f59e0b', need: profile.emi || 0, current: profile.emi || 0 },
+      { id: 'mutual', label: 'Mutual Funds/SIP', icon: '📊', defaultPriority: 'Medium', color: T.amber || '#f59e0b', need: surplusAmount * 0.5, current: investCurrent },
+      { id: 'home', label: 'Home Loan Prepayment', icon: '🏠', defaultPriority: 'Medium', color: T.blue || '#3b82f6', need: surplusAmount * 0.3, current: 0 },
+      { id: 'lifestyle', label: 'Lifestyle Goals', icon: '✨', defaultPriority: 'Low', color: T.teal || '#14b8a6', need: surplusAmount * 0.2, current: 0 },
     ];
     
-    return basePriorities;
+    return baseConfigs.map(config => {
+      // Find saved priority or use default
+      const saved = savedPriorities.find(sp => sp.id === config.id);
+      return {
+        ...config,
+        priority: saved?.priority || config.defaultPriority,
+        progress: config.need > 0 ? Math.min(100, (config.current / config.need) * 100) : 0
+      };
+    });
   };
 
   const [priorities, setPriorities] = useState([]);
   const [editingPriority, setEditingPriority] = useState(null);
   const [showPriorityModal, setShowPriorityModal] = useState(false);
 
-  // Update priorities when profile data changes
+  // Initial load from profile
   useEffect(() => {
-    if (priorities.length === 0 || profile.income > 0) {
-      setPriorities(generateDynamicPriorities());
+    if (profile) {
+      setPriorities(generateDynamicPriorities(profile.priorities || []));
     }
-  }, [profile.income, profile.expenses, profile.emi, profile.emergency, profile.investments]);
+  }, [profile.income, profile.expenses, profile.emi, profile.investments, profile.emergency, assets]);
 
   // Sort priorities based on priority level (High to Low)
   const sortedPriorities = [...priorities].sort((a, b) => {
@@ -506,13 +475,15 @@ export default function Profile({ profile, setProfile, onUpdate }) {
     
     setSaving(true);
     try {
+      // Save high-level financial data
       await profileAPI.update({
         income: profile.income,
         expenses: profile.expenses,
         emi: profile.emi,
         savings: profile.savings,
         investments: profile.investments,
-        emergency: profile.emergency
+        emergency: profile.emergency,
+        priorities: priorities.map(p => ({ id: p.id, priority: p.priority }))
       });
       
       // Convert array structure from frontend to object structure for backend
@@ -1011,7 +982,7 @@ export default function Profile({ profile, setProfile, onUpdate }) {
                     <div>
                       <div style={{ fontSize: 13, fontWeight: 600 }}>{p.label}</div>
                       <div style={{ fontSize: 11, color: T.textMuted }}>
-                        Target: {fmtK(Math.round(p.need))}/mo | Current: {fmtK(Math.round(p.current))}/mo
+                        Target: {fmtK(Math.round(p.need))}{p.id === 'emi' || p.id === 'mutual' ? '/mo' : ''} | Current: {fmtK(Math.round(p.current))}{p.id === 'emi' || p.id === 'mutual' ? '/mo' : ''}
                       </div>
                     </div>
                   </div>
