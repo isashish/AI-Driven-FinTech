@@ -6,7 +6,7 @@ import { useTheme } from '../context/ThemeContext.jsx';
 import { Card, StatCard, RangeInput, Badge, ImgBanner, ChartTooltip } from '../components/UI.jsx';
 import { calcEMI, fmtK, IMGS } from '../utils.jsx';
 import { RefreshCw, TrendingUp } from 'lucide-react';
-import { profileAPI } from '../api.js';
+import { profileAPI, loansAPI } from '../api.js';
 
 export default function Debt({ profile = {}, onRefresh }) {
   const { T } = useTheme();
@@ -19,92 +19,130 @@ export default function Debt({ profile = {}, onRefresh }) {
 
   const [hasLoaded, setHasLoaded] = useState(false);
 
-  // Sync loans with profile debts on first load
-  React.useEffect(() => {
-    if (hasLoaded) return; // Prevent overwriting manual state after load
-
-    const liab = profile.assets?.liabilities || {};
-    const savedDebts = profile.assets?.debts || [];
-
-    if (savedDebts && savedDebts.length > 0) {
-      setLoans(savedDebts);
-      setHasLoaded(true);
-    } else if (liab && Object.values(liab).some(v => v > 0)) {
-      // Only load from liab if we haven't already manually edited loans
-      const initialLoans = [];
-      if (liab.homeLoan) initialLoans.push({ id: 'h1', name: 'Home Loan', principal: liab.homeLoan, rate: 8.5, months: 240, type: 'reducing', ratePeriod: 'yearly' });
-      if (liab.carLoan) initialLoans.push({ id: 'c1', name: 'Car Loan', principal: liab.carLoan, rate: 10.5, months: 60, type: 'reducing', ratePeriod: 'yearly' });
-      if (liab.personalLoan) initialLoans.push({ id: 'p1', name: 'Personal Loan', principal: liab.personalLoan, rate: 16, months: 36, type: 'reducing', ratePeriod: 'yearly' });
-      if (liab.otherLiabilities) initialLoans.push({ id: 'o1', name: 'Other Debt', principal: liab.otherLiabilities, rate: 12, months: 12, type: 'reducing', ratePeriod: 'yearly' });
-
-      setLoans(initialLoans);
-      setHasLoaded(true);
+  const fetchLoans = async () => {
+    try {
+      const res = await loansAPI.getAll();
+      setLoans(res.data.loans || []);
+    } catch (err) {
+      console.error('Failed to fetch loans:', err);
     }
-  }, [profile.assets?.liabilities, profile.assets?.debts, hasLoaded]);
+  };
 
-  // Sync Extra Payment with surplus (Commented out as user wants default 0)
-  /*
+  // Sync loans with database on load
   React.useEffect(() => {
-    if (profile.savings > 0) setExtra(profile.savings);
-  }, [profile.savings]);
-  */
+    fetchLoans();
+  }, [profile]);
 
   const syncToDb = async (newList) => {
-    try {
-      await profileAPI.updateAssets({
-        ...profile.assets,
-        debts: newList
-      });
-      if (onRefresh) onRefresh();
-    } catch (err) {
-      console.error('Failed to sync debts:', err);
-    }
+    // This is now handled by individual create/delete calls in the new architecture
+    if (onRefresh) onRefresh();
   };
 
   const handleAdd = async () => {
-    const newList = [{ ...newL, id: Date.now() }, ...loans];
-    setLoans(newList);
-    setNewL({ name: '', principal: 0, rate: 0, months: 0, type: 'reducing', ratePeriod: 'yearly' });
-    await syncToDb(newList);
+    if (!newL.name || !newL.principal || !newL.rate || !newL.months) {
+      alert("Please fill in all loan details before saving.");
+      return;
+    }
+    try {
+      // Map frontend fields to DB model
+      const dbLoan = {
+        name: newL.name,
+        principalAmount: Number(newL.principal),
+        annualInterestRate: Number(newL.ratePeriod === 'monthly' ? newL.rate * 12 : newL.rate),
+        tenureMonths: Number(newL.months),
+        loanType: (function() {
+          const n = newL.name.toLowerCase();
+          if (n.includes('home')) return 'home';
+          if (n.includes('car')) return 'car';
+          if (n.includes('educ')) return 'education';
+          if (n.includes('bus')) return 'business';
+          if (n.includes('pers')) return 'personal';
+          return 'other';
+        })()
+      };
+      
+      const response = await loansAPI.create(dbLoan);
+      await fetchLoans(); // Refresh list from DB
+      setNewL({ name: '', principal: 0, rate: 0, months: 0, type: 'reducing', ratePeriod: 'yearly' });
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error('Add loan failed:', err);
+      const msg = err.response?.data?.message || "Check your inputs and try again.";
+      alert(`Failed to save loan: ${msg}`);
+    }
   };
 
   const handleDelete = async (id) => {
-    const newList = loans.filter(l => l.id !== id);
-    setLoans(newList);
-    await syncToDb(newList);
+    try {
+      await loansAPI.delete(id);
+      fetchLoans(); // Refresh from DB
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error('Delete loan failed:', err);
+    }
   };
-  const sorted = [...loans].sort((a, b) => strategy === 'avalanche' ? b.rate - a.rate : a.principal - b.principal);
+  const sorted = [...loans].sort((a, b) => {
+    const rateA = a.annualInterestRate || a.rate || 0;
+    const rateB = b.annualInterestRate || b.rate || 0;
+    const princA = a.principalAmount || a.principal || 0;
+    const princB = b.principalAmount || b.principal || 0;
+    return strategy === 'avalanche' ? rateB - rateA : princA - princB;
+  });
 
-  const getEffRate = (l) => l.ratePeriod === 'monthly' ? l.rate * 12 : l.rate;
+  const getEffRate = (l) => {
+    const r = l.annualInterestRate || l.rate || 0;
+    return l.ratePeriod === 'monthly' ? r * 12 : r;
+  };
 
-  const totalEMI = loans.reduce((s, l) => s + calcEMI(l.principal, getEffRate(l), l.months, l.type), 0);
-  const totalInt = loans.reduce((s, l) => { const e = calcEMI(l.principal, getEffRate(l), l.months, l.type); return s + (e * l.months - l.principal); }, 0);
-  const maxRate = Math.max(...loans.map(l => getEffRate(l)));
+  const totalEMI = loans.reduce((s, l) => {
+    const r = l.annualInterestRate || l.rate || 0;
+    const p = l.principalAmount || l.principal || 0;
+    const m = l.tenureMonths || l.months || 0;
+    return s + calcEMI(p, getEffRate(l), m, l.type || 'reducing');
+  }, 0);
+
+  const totalInt = loans.reduce((s, l) => {
+    const p = l.principalAmount || l.principal || 0;
+    const r = l.annualInterestRate || l.rate || 0;
+    const m = l.tenureMonths || l.months || 0;
+    const e = calcEMI(p, getEffRate(l), m, l.type || 'reducing');
+    return s + (e * m - p);
+  }, 0);
+
+  const maxRate = Math.max(...loans.map(l => l.annualInterestRate || l.rate || 0), 0);
 
   let totalInterestSaved = 0;
   let totalMonthsSaved = 0;
   let maxOptimizedMonths = 0;
 
-  const optimizedData = sorted.map((l, i) => {
-    const r = getEffRate(l);
-    const standardEMI = calcEMI(l.principal, r, l.months, l.type);
+  const optimizedData = sorted.map((loan, i) => {
+    const r = loan.rate || loan.annualInterestRate || 0;
+    const principal = loan.principal || loan.principalAmount || 0;
+    const months = loan.months || loan.tenureMonths || 0;
+    
+    const standardEMI = calcEMI(principal, getEffRate({ ...loan, rate: r }), months, loan.type || 'reducing');
+    
     // Apply lumpsum ONLY to the first target loan
-    const currentPrincipal = i === 0 ? Math.max(0, l.principal - lumpsum) : l.principal;
+    const currentPrincipal = i === 0 ? Math.max(0, principal - lumpsum) : principal;
     const bonus = i === 0 ? extra : 0;
-
+    
     const newMonths = currentPrincipal <= 0 ? 0 : Math.max(1, Math.round(currentPrincipal / (standardEMI + bonus)));
-    const monthsSaved = l.months - newMonths;
-    const interestSaved = (standardEMI * l.months - l.principal) - ((standardEMI + bonus) * newMonths - currentPrincipal);
-
+    const monthsSaved = months - newMonths;
+    const interestSaved = (standardEMI * months - principal) - ((standardEMI + bonus) * newMonths - currentPrincipal);
+    
     if (newMonths > maxOptimizedMonths) maxOptimizedMonths = newMonths;
 
     if (monthsSaved > 0) {
       totalMonthsSaved += monthsSaved;
       totalInterestSaved += interestSaved;
     }
-
+    
     return {
-      ...l,
+      ...loan,
+      id: loan._id || loan.id,
+      principal,
+      rate: r,
+      months,
       newMonths,
       monthsSaved,
       interestSaved: Math.max(0, interestSaved),
@@ -181,7 +219,7 @@ export default function Debt({ profile = {}, onRefresh }) {
                 size={16}
                 style={{ cursor: 'pointer', opacity: 0.6 }}
                 onClick={() => {
-                  setHasLoaded(false); // Allow re-sync from profile
+                  fetchLoans();
                   setExtra(0);         // Reset extra payment to 0
                   setLumpsum(0);       // Reset lumpsum to 0
                   if (onRefresh) onRefresh();
@@ -246,7 +284,7 @@ export default function Debt({ profile = {}, onRefresh }) {
 
               <div>
                 <label style={{ fontSize: 12, fontWeight: 700, color: T.textMuted, marginBottom: 6, display: 'block' }}>Loan Amount (₹)</label>
-                <input
+                <input 
                   type="number" value={newL.principal === 0 ? '' : newL.principal}
                   onChange={e => setNewL({ ...newL, principal: e.target.value === '' ? 0 : Number(e.target.value) })}
                   placeholder="0"

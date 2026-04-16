@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/dashboard.css';
-import { predictionsAPI } from '../api';
+import { predictionsAPI, loansAPI } from '../api';
 
 
 import {
@@ -13,40 +13,58 @@ import { calcHealth, fmtK, PIE_COLORS, IMGS } from '../utils.jsx';
 
 export default function Dashboard({ profile, goals }) {
   const { T } = useTheme();
+  const [totalLoanEMI, setTotalLoanEMI] = useState(0);
+  // Priority: 1. DB calculated total, 2. Profile entry, 3. fallback 0
+  const displayEMI = totalLoanEMI || profile.emi || 0;
+
   const score      = calcHealth(profile);
-  const surplus    = Math.max(0, profile.income - profile.expenses - profile.emi);
+  const surplus    = Math.max(0, profile.income - profile.expenses - displayEMI);
   const savePct    = profile.income ? ((profile.savings / profile.income) * 100).toFixed(1) : '0.0';
   const scoreColor = score >= 75 ? T.teal : score >= 50 ? T.amber : T.rose;
 
   const expData = [
     { name: 'Essential Exp.', value: profile.expenses },
-    { name: 'EMI / Debt',     value: profile.emi },
+    { name: 'EMI / Debt',     value: displayEMI },
     { name: 'Investments',    value: profile.investments },
     { name: 'Savings',        value: profile.savings },
   ].filter(d => d.value > 0);
 
   const [aiForecast, setAiForecast] = useState([]);
   const [loadingAI, setLoadingAI] = useState(false);
+  const [activeLoans, setActiveLoans] = useState([]);
+
 
   useEffect(() => {
-    const fetchForecast = async () => {
+    const fetchDashboardData = async () => {
       setLoadingAI(true);
       try {
-        const res = await predictionsAPI.getAICashflow({
-          income: profile.income,
-          expenses: profile.expenses,
-          emi: profile.emi,
-          investments: profile.investments
-        });
-        if (res.data.forecast) setAiForecast(res.data.forecast);
+        const [forecastRes, loansRes] = await Promise.all([
+          predictionsAPI.getAICashflow({
+            income: profile.income,
+            expenses: profile.expenses,
+            emi: profile.emi,
+            investments: profile.investments
+          }),
+          loansAPI.getAll()
+        ]);
+        
+        if (forecastRes.data.forecast) setAiForecast(forecastRes.data.forecast);
+        if (loansRes.data) {
+          setActiveLoans(loansRes.data.loans || []);
+          if (loansRes.data.totalEMI !== undefined) {
+            setTotalLoanEMI(loansRes.data.totalEMI);
+          }
+        }
       } catch (err) {
-        console.error('Failed to fetch AI forecast:', err);
+        console.error('Dashboard sync failed:', err);
       } finally {
         setLoadingAI(false);
       }
     };
-    if (profile.income > 0) fetchForecast();
+    if (profile.income > 0) fetchDashboardData();
   }, [profile]);
+
+
 
   const flowData = aiForecast.length > 0 ? aiForecast : ['Oct','Nov','Dec','Jan','Feb','Mar'].map((m, i) => {
     // Fallback data
@@ -99,7 +117,7 @@ export default function Dashboard({ profile, goals }) {
       {/* Stats */}
       <div className="db-stats">
         <StatCard label="Monthly Income"  value={fmtK(profile.income)}               sub={`${savePct}% savings rate`} icon="💰" color={T.teal}   light={T.tealLight}  />
-        <StatCard label="Total Outflow"   value={fmtK(profile.expenses+profile.emi)} sub="Expenses + EMI"             icon="📊" color={T.blue}   light={T.blueLight}  />
+        <StatCard label="Total Outflow"   value={fmtK(profile.expenses+displayEMI)} sub="Expenses + EMI"             icon="📊" color={T.blue}   light={T.blueLight}  />
         <StatCard label="Investments/mo"  value={fmtK(profile.investments)}          sub="Wealth building"            icon="📈" color={T.violet} light={T.mode==='dark'?'#1A1040':'#F3F0FF'} />
         <StatCard label="Emergency Fund"  value={fmtK(profile.emergency)}            sub={`${profile.expenses ? Math.round(profile.emergency/profile.expenses) : 0} months cover`} icon="🛡️" color={T.green} light={T.greenLight} />
       </div>
@@ -183,7 +201,7 @@ export default function Dashboard({ profile, goals }) {
       </div>
 
       {/* Active Loans Section */}
-      {profile.assets?.debts?.length > 0 && (
+      {activeLoans?.length > 0 && (
         <Card style={{ marginBottom: 20 }}>
           <div className="db-goals-header">
             <div>
@@ -193,21 +211,24 @@ export default function Dashboard({ profile, goals }) {
             <div style={{ textAlign: 'right' }}>
               <div style={{ fontSize: 11, fontWeight: 800, color: T.rose }}>TOTAL PRINCIPAL</div>
               <div style={{ fontSize: 20, fontWeight: 900, color: T.text }}>
-                {fmtK(profile.assets.debts.reduce((sum, l) => sum + (l.principal || 0), 0))}
+                {fmtK(activeLoans.reduce((sum, l) => sum + (l.principalAmount || l.principal || 0), 0))}
               </div>
             </div>
           </div>
           <div className="db-goals-grid">
-            {profile.assets.debts.map(l => {
-              const c = l.rate > 15 ? T.rose : l.rate > 10 ? T.amber : T.teal;
+            {activeLoans.map(l => {
+              const r = l.annualInterestRate || l.rate || 0;
+              const p = l.principalAmount || l.principal || 0;
+              const m = l.tenureMonths || l.months || 0;
+              const c = r > 15 ? T.rose : r > 10 ? T.amber : T.teal;
               return (
-                <div key={l.id} className="db-goal-card" style={{ background: T.bg, border: `1px solid ${T.border}`, borderLeft: `4px solid ${c}` }}>
+                <div key={l._id || l.id} className="db-goal-card" style={{ background: T.bg, border: `1px solid ${T.border}`, borderLeft: `4px solid ${c}` }}>
                   <div className="db-goal-card-header">
                     <span className="db-goal-name" style={{ color: T.text, fontWeight: 700 }}>{l.name}</span>
-                    <Badge color={c}>{l.rate}% p.a.</Badge>
+                    <Badge color={c}>{r}% p.a.</Badge>
                   </div>
                   <div style={{ marginTop: 8, fontSize: 13, color: T.textSub }}>
-                     Due: <span style={{ fontWeight: 800 }}>{fmtK(l.principal)}</span> over {l.months} months
+                     Due: <span style={{ fontWeight: 800 }}>{fmtK(p)}</span> over {m} months
                   </div>
                   <div className="db-goal-bar-track" style={{ background: T.border, height: 4, marginTop: 10 }}>
                     <div className="db-goal-bar-fill"

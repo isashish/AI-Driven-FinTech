@@ -34,26 +34,39 @@ router.get('/', async (req, res) => {
 // ─── POST /api/loans ──────────────────────────────────────────────────────
 router.post('/', loanValidation, async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(400).json({ message: errors.array()[0].msg });
+  if (!errors.isEmpty()) {
+    console.error('Loan Validation Errors:', errors.array());
+    return res.status(400).json({ message: errors.array()[0].msg });
+  }
 
   try {
     const { name, loanType, principalAmount, outstandingAmount, annualInterestRate, tenureMonths, startDate, lender, notes } = req.body;
+    
+    // Ensure loanType is within the allowed enum values
+    const validTypes = ['home', 'car', 'personal', 'education', 'business', 'other'];
+    const finalType = validTypes.includes(loanType) ? loanType : 'other';
+
     const loan = await Loan.create({
       userId: req.userId,
       name,
-      loanType: loanType || 'other',
-      principalAmount,
-      outstandingAmount: outstandingAmount ?? principalAmount,
-      annualInterestRate,
-      tenureMonths,
+      loanType: finalType,
+      principalAmount: Number(principalAmount),
+      outstandingAmount: Number(outstandingAmount ?? principalAmount),
+      annualInterestRate: Number(annualInterestRate),
+      tenureMonths: Number(tenureMonths),
       startDate: startDate || Date.now(),
       lender: lender || '',
       notes: notes || '',
     });
     res.status(201).json({ loan });
   } catch (err) {
-    console.error('Create loan error:', err);
-    res.status(500).json({ message: 'Server error.' });
+    console.error('Create loan database error:', err);
+    // If it's a Mongoose validation error, return the specific messages
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({ message: messages.join(', ') });
+    }
+    res.status(500).json({ message: 'Server error: ' + err.message });
   }
 });
 

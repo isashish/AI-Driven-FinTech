@@ -64,4 +64,11 @@ export const predictionsAPI = {
   getAICashflow: (data) => api.post('/predictions/ai-cashflow', data),
 };
 
+export const loansAPI = {
+  getAll: () => api.get('/loans'),
+  create: (loan) => api.post('/loans', loan),
+  update: (id, loan) => api.put(`/loans/${id}`, loan),
+  delete: (id) => api.delete(`/loans/${id}`),
+};
+
 export default api;
