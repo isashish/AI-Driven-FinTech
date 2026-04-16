@@ -18,16 +18,16 @@ const loanValidation = [
 // ─── GET /api/loans ───────────────────────────────────────────────────────
 router.get('/', async (req, res) => {
   try {
-    const { active } = req.query;
-    const filter = { userId: req.userId };
-    if (active !== undefined) filter.isActive = active === 'true';
-
-    const loans = await Loan.find(filter).sort({ createdAt: -1 });
-    const totalEMI = loans.filter(l => l.isActive).reduce((s, l) => s + l.emiAmount, 0);
-    res.json({ loans, totalEMI: Math.round(totalEMI) });
+    // FORCE filter by req.userId (no global access)
+    const loans = await Loan.find({ userId: req.userId }).sort({ createdAt: -1 });
+    
+    const totalRemaining = loans.reduce((s, l) => s + (l.principalAmount || 0), 0);
+    const totalEMI = loans.reduce((s, l) => s + (l.emiAmount || 0), 0);
+    
+    res.json({ loans, totalEMI: Math.round(totalEMI), totalPrincipal: totalRemaining });
   } catch (err) {
     console.error('Get loans error:', err);
-    res.status(500).json({ message: 'Server error.' });
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
