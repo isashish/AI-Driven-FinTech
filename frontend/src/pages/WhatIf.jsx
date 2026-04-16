@@ -64,11 +64,12 @@ export default function WhatIf({ profile }) {
   }, [profile]);
 
   const base = {
-    inc: profile.income      || 80000,
-    exp: profile.expenses    || 40000,
-    sav: profile.savings     || 15000,
-    inv: profile.investments || 10000,
+    inc: Number(profile.income      || 0),
+    exp: Number(profile.expenses    || 0),
+    sav: Number(profile.savings     || 0),
+    inv: Number(profile.investments || 0),
   };
+
   const sim = {
     inc: base.inc * (1 + incBoost / 100),
     exp: base.exp * (1 - expCut   / 100),
@@ -114,10 +115,12 @@ export default function WhatIf({ profile }) {
 
   const simData = Array.from({ length: 11 }, (_, i) => {
     const year = i;
-    const baseline = Math.round(base.sav * 12 * year * Math.pow(1.08, year));
-    const optimized = Math.round(sim.sav * 12 * year * Math.pow(1.10, year));
-    // ML Probability Band (Variance)
-    const variance = (year * 0.05); // 5% variance growth per year
+    // Personalized baseline using ACTUAL profile savings
+    const baseline = Math.round(base.sav * 12 * year * Math.pow(1.07, year)); 
+    // Optimized path using SIMULATED savings
+    const optimized = Math.round(sim.sav * 12 * year * Math.pow(1.09, year));
+    
+    const variance = (year * 0.05); 
     return {
       yearLabel: `Year ${year}`,
       Baseline:  baseline,
