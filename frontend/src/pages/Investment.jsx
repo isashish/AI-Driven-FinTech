@@ -320,7 +320,7 @@ function StockSearchUI({ api, T }) {
 
   return (
     <div className="stock-search-container">
-      <form onSubmit={handleSearch} style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
+      <form onSubmit={handleSearch} className="stock-search-form" style={{ display: 'flex', gap: 10, marginBottom: 20 }}>
         <input
           type="text"
           placeholder="Enter Symbol (e.g. RELIANCE)"
@@ -332,6 +332,7 @@ function StockSearchUI({ api, T }) {
           }}
         />
         <button
+          className="stock-search-btn"
           disabled={loading}
           style={{
             padding: '10px 24px', borderRadius: '12px', background: T.teal, color: '#fff',

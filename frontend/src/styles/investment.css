@@ -37,9 +37,13 @@
 @media (max-width: 640px) {
   .inv-mini { grid-template-columns: 1fr; gap: 10px; }
   .inv-mult-value { font-size: 32px; }
+  .stock-search-form { flex-direction: column; }
+  .stock-search-btn { width: 100%; }
 }
 @media (max-width: 400px) {
   .inv-mini { grid-template-columns: 1fr; }
+  .inv-page { gap: 12px; }
+  .inv-grid { gap: 12px; }
 }
 
 /* AI Insights */
