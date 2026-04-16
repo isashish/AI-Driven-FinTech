@@ -11,14 +11,14 @@ import { Brain, ShieldAlert, TrendingUp, Sparkles, RefreshCw } from 'lucide-reac
 export default function Investment({ profile = {} }) {
   const { T, isDark } = useTheme();
   const [P, setP] = useState(0);
-  const [sip, setSip] = useState(profile.savings || 10000);
+  const [sip, setSip] = useState(profile.investments || 10000);
   const [r, setR] = useState(12);
   const [yrs, setYrs] = useState(10);
 
-  // Sync SIP with profile savings if profile changes
+  // Sync SIP with profile investments if profile changes
   useEffect(() => {
-    if (profile.savings) setSip(profile.savings);
-  }, [profile.savings]);
+    if (profile.investments) setSip(profile.investments);
+  }, [profile.investments]);
 
   // AI States
   const [aiLoading, setAiLoading] = useState(false);
