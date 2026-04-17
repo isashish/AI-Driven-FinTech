@@ -396,20 +396,21 @@ export default function Debt({ profile = {}, onRefresh }) {
                 boxShadow: loan.isTarget ? `0 8px 30px ${T.teal}22` : 'none',
                 zIndex: loan.isTarget ? 2 : 1
               }}>
-                <div style={{ position: 'absolute', top: 15, right: 15, display: 'flex', gap: 8, alignItems: 'center' }}>
-                  {loan.isQuickWin && <Badge color={T.amber} style={{ fontSize: 11 }}>🎁 NEXT QUICK WIN</Badge>}
-                  {loan.isTarget && <Badge color={T.teal} style={{ fontSize: 11, animation: 'pulse 2s infinite' }}>⚡ {lumpsum > 0 ? 'LUMPSUM TARGET' : 'MONTHLY TARGET'}</Badge>}
-                  {loan.monthsSaved > 0 && <Badge color={T.blue} style={{ fontSize: 10 }}>Reduced by {Math.round(loan.monthsSaved / loan.months * 100)}%</Badge>}
-                  <Badge color={loan.type === 'reducing' ? T.teal : T.rose} style={{ fontSize: 10 }}>{loan.type === 'reducing' ? 'Reducing Bal' : 'Flat Rate'}</Badge>
-                  <button
-                    onClick={() => handleDelete(loan.id)}
-                    className="dt-loan-remove"
-                    style={{ background: T.roseLight, color: T.rose }}
-                  >✕</button>
-                </div>
-
-                <div className="dt-loan-name" style={{ color: T.text, fontSize: 18, fontWeight: 800, marginBottom: 12 }}>
-                  {loan.name}
+                <div className="dt-loan-header">
+                  <div className="dt-loan-name" style={{ color: T.text, fontSize: 18, fontWeight: 800 }}>
+                    {loan.name}
+                  </div>
+                  <div className="dt-loan-card-top">
+                    {loan.isQuickWin && <Badge color={T.amber} style={{ fontSize: 11 }}>🎁 NEXT QUICK WIN</Badge>}
+                    {loan.isTarget && <Badge color={T.teal} style={{ fontSize: 11, animation: 'pulse 2s infinite' }}>⚡ {lumpsum > 0 ? 'LUMPSUM TARGET' : 'MONTHLY TARGET'}</Badge>}
+                    {loan.monthsSaved > 0 && <Badge color={T.blue} style={{ fontSize: 10 }}>Reduced by {Math.round(loan.monthsSaved / loan.months * 100)}%</Badge>}
+                    <Badge color={loan.type === 'reducing' ? T.teal : T.rose} style={{ fontSize: 10 }}>{loan.type === 'reducing' ? 'Reducing Bal' : 'Flat Rate'}</Badge>
+                    <button
+                      onClick={() => handleDelete(loan.id)}
+                      className="dt-loan-remove"
+                      style={{ background: T.roseLight, color: T.rose }}
+                    >✕</button>
+                  </div>
                 </div>
 
                 <div className="dt-loan-detail">
